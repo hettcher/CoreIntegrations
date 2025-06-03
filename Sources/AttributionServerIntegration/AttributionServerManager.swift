@@ -15,6 +15,7 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
     public func configure(config: AttributionConfigData) {
         self.facebookData = config.facebookData
         self.appsflyerID = config.appsflyerID
+        self.appEnvironment = config.appEnvironment
         authorizationToken = config.authToken
         
         serverWorker = AttributionServerWorker(installServerURLPath: config.installServerURLPath,
@@ -69,7 +70,7 @@ open class AttributionServerManager {
     public static var shared: AttributionServerManager = AttributionServerManager()
     public var installError: Error? = nil
     public var uniqueUserID: String? {
-        return dataWorker.uuid
+        return udefWorker.uuid
     }
     
     var serverWorker: AttributionServerWorkerProtocol?
@@ -79,7 +80,7 @@ open class AttributionServerManager {
     var authorizationToken: AttributionServerToken!
     var facebookData: AttributionFacebookModel? = nil
     var appsflyerID: String? = nil
-    
+    var appEnvironment: String? = nil
         
     fileprivate func validateToken(_ token: AttributionServerToken?) -> Bool {
         guard authorizationToken != nil else {
@@ -96,50 +97,51 @@ open class AttributionServerManager {
     }
     
     fileprivate func collectInstallData() async -> AttributionInstallRequestModel {
-            let attributionDetails:AttributionDetails? = dataWorker.attributionDetails()
-            
-            let sdkVersion = dataWorker.sdkVersion
-            let osVersion = dataWorker.osVersion
-            let appVersion = dataWorker.appVersion
-            let isTrackingEnabled = dataWorker.isAdTrackingEnabled
-            let uuid = dataWorker.uuid
-            let idfa = dataWorker.idfa
-            let idfv = dataWorker.idfv
-            let storeCountry = dataWorker.storeCountry
-            
-            var saFields: AttributionInstallRequestModel.SAFields?
-            
-            if let attributionDetails = attributionDetails {
-                if let details = attributionDetails.details {
-                    saFields = AttributionInstallRequestModel.SAFields(data: details)
-                }else{
-                    saFields = AttributionInstallRequestModel.SAFields(token: attributionDetails.attributionToken )
-                }
+        let attributionDetails:AttributionDetails? = await dataWorker.attributionDetails()
+        
+        let sdkVersion = dataWorker.sdkVersion
+        let osVersion = dataWorker.osVersion
+        let appVersion = dataWorker.appVersion
+        let isTrackingEnabled = dataWorker.isAdTrackingEnabled
+        let uuid = udefWorker.uuid
+        let idfa = dataWorker.idfa
+        let idfv = dataWorker.idfv
+        let storeCountry = dataWorker.storeCountry
+        
+        var saFields: AttributionInstallRequestModel.SAFields?
+        
+        if let attributionDetails = attributionDetails {
+            if let details = attributionDetails.details {
+                saFields = AttributionInstallRequestModel.SAFields(data: details)
+            }else{
+                saFields = AttributionInstallRequestModel.SAFields(token: attributionDetails.attributionToken )
             }
-            
-            var fbFields: AttributionInstallRequestModel.FBFields? = nil
-            if let data = facebookData {
-                fbFields = AttributionInstallRequestModel.FBFields(userId: data.fbUserId, userData: data.fbUserData, anonymousId: data.fbAnonId)
-            }
-            
-            var status: UInt? = nil
-            if #available(iOS 14.3, *) {
-                status = ATTrackingManager.trackingAuthorizationStatus.rawValue
-            }
-            
-            let parameters = AttributionInstallRequestModel(userId: uuid,
-                                                            idfa: idfa,
-                                                            idfv: idfv,
-                                                            sdkVersion: sdkVersion,
-                                                            osVersion: osVersion,
-                                                            appVersion: appVersion,
-                                                            limitAdTracking: !isTrackingEnabled,
-                                                            storeCountry: storeCountry,
-                                                            appsflyerId: appsflyerID,
-                                                            iosATT: status,
-                                                            fb: fbFields, sa: saFields)
-            return parameters
         }
+        
+        var fbFields: AttributionInstallRequestModel.FBFields? = nil
+        if let data = facebookData {
+            fbFields = AttributionInstallRequestModel.FBFields(userId: data.fbUserId, userData: data.fbUserData, anonymousId: data.fbAnonId)
+        }
+        
+        var status: UInt? = nil
+        if #available(iOS 14.3, *) {
+            status = ATTrackingManager.trackingAuthorizationStatus.rawValue
+        }
+        
+        let parameters = AttributionInstallRequestModel(userId: uuid,
+                                                        idfa: idfa,
+                                                        idfv: idfv,
+                                                        sdkVersion: sdkVersion,
+                                                        osVersion: osVersion,
+                                                        appVersion: appVersion,
+                                                        limitAdTracking: !isTrackingEnabled,
+                                                        storeCountry: storeCountry,
+                                                        appsflyerId: appsflyerID,
+                                                        iosATT: status,
+                                                        environment: appEnvironment,
+                                                        fb: fbFields, sa: saFields)
+        return parameters
+    }
     
     fileprivate func sendInstallData(_ data: AttributionInstallRequestModel, authToken: AttributionServerToken, completion: @escaping (AttributionManagerResult?) -> Void) {
         serverWorker?.sendInstallAnalytics(parameters: data,
@@ -180,7 +182,7 @@ open class AttributionServerManager {
         let jws = details.jws
         let originalTransactionID = details.originalTransactionID
         let decodedTransaction = details.decodedTransaction
-        let uuid = dataWorker.uuid
+        let uuid = udefWorker.uuid
         
         let introPrice = introductoryPrice ?? 0
         
@@ -260,7 +262,7 @@ open class AttributionServerManager {
             let status = ATTrackingManager.trackingAuthorizationStatus
             if status == .authorized {
                 let idfaOrNil = dataWorker.idfa
-                let uuid = dataWorker.uuid
+                let uuid = udefWorker.uuid
                 result = idfaOrNil ?? uuid
             } else {
                 if let savedGeneratedUUID = udefWorker.getGeneratedToken() {
@@ -274,7 +276,7 @@ open class AttributionServerManager {
             }
         } else {
             let idfaOrNil = dataWorker.idfa
-            let uuid = dataWorker.uuid
+            let uuid = udefWorker.uuid
             result = idfaOrNil ?? uuid
         }
         

@@ -42,6 +42,11 @@ class AppConfigurationManager {
         self.timout = timeout
     }
     
+    init(model: CoreConfigurationModel, timeout: Int = 6) {
+        self.model = model
+        self.timout = timeout
+    }
+    
     public func reset() {
         model.completedEvents.removeAll()
         model.completionErrors.removeAll()

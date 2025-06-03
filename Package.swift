@@ -36,6 +36,7 @@ let package = Package(
                     "AttributionServerIntegration",
                     "SentryIntegration",
                     "FirebaseIntegration",
+                    "AttestationIntegration",
                 ],
                 linkerSettings: [
                   .linkedFramework("UIKit", .when(platforms: [.iOS])),
@@ -103,6 +104,12 @@ let package = Package(
                     .product(name: "Sentry", package: "sentry-cocoa")
                 ],
                 path: "Sources/SentryIntegration",
+                linkerSettings: [
+                    .linkedFramework("UIKit", .when(platforms: [.iOS])),
+                ]
+               ),
+        .target(name: "AttestationIntegration",
+                path: "Sources/AttestationIntegration",
                 linkerSettings: [
                   .linkedFramework("UIKit", .when(platforms: [.iOS])),
                 ]

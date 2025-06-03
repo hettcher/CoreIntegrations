@@ -8,6 +8,7 @@ import PurchasesIntegration
 import AnalyticsIntegration
 import RemoteTestingIntegration
 import SentryIntegration
+import AttestationIntegration
 import FirebaseIntegration
 #endif
 import AppTrackingTransparency
@@ -18,7 +19,7 @@ import StoreKit
 public class CoreManager {
     public static var shared: CoreManagerProtocol = internalShared
     static var internalShared = CoreManager()
-    
+        
     public static var uniqueUserID: String? {
         return AttributionServerManager.shared.uniqueUserID
     }
@@ -59,7 +60,7 @@ public class CoreManager {
     var analyticsManager: AnalyticsManager?
     var sentryManager: InternalSentryManagerProtocol = SentryManager.shared
     var firebaseManager: FirebaseManager = FirebaseManager()
-    
+
     var delegate: CoreManagerDelegate?
         
     var idConfigured = false
@@ -157,6 +158,7 @@ public class CoreManager {
                                                                  installPath: installPath,
                                                                  purchasePath: purchasePath,
                                                                  appsflyerID: appsflyerToken,
+                                                                 appEnvironment: AppEnvironment.current.rawValue,
                                                                  facebookData: facebookData)
             
             AttributionServerManager.shared.configure(config: attributionConfiguration)

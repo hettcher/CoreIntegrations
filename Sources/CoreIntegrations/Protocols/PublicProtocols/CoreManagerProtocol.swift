@@ -7,11 +7,13 @@ import AppsflyerIntegration
 import AttributionServerIntegration
 import AnalyticsIntegration
 import SentryIntegration
+import AttestationIntegration
 #endif
 import AppTrackingTransparency
 
 public protocol CoreManagerProtocol {
     static var shared: CoreManagerProtocol { get }
+        
     static var uniqueUserID: String? { get }
     static var sentry:PublicSentryManagerProtocol { get }
     
@@ -35,6 +37,8 @@ public protocol CoreManagerProtocol {
     func handleNoInternetAlertWasShown()
 
     func purchase(_ purchase: Purchase, activeController: UIViewController?) async -> PurchasesPurchaseResult
+    
+    func purchase(_ purchase: Purchase, promoOffer: PromoOffer, activeController: UIViewController?) async -> PurchasesPurchaseResult
         
     func verifyPremium() async -> PurchasesVerifyPremiumResult
     
@@ -43,6 +47,7 @@ public protocol CoreManagerProtocol {
     func restore() async -> PurchasesRestoreResult
     
     func restoreAll() async -> PurchasesRestoreResult
+    
 }
 
 public struct UserInfo: Codable {

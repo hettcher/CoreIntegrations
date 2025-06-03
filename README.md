@@ -1,3 +1,3 @@
 # CoreIntegrations
 
-Framework version - 2.7.19amplfinal
+Framework version - 2.8.0amplfinal

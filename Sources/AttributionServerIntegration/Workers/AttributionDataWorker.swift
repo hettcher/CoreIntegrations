@@ -23,14 +23,8 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
         return uuid
     }
     
-    var uuid: String {
-        let idfv = UIDevice.current.identifierForVendor?.uuidString ?? ""
-        let range = idfv.index(idfv.startIndex, offsetBy: 14)
-        return idfv.replacingCharacters(in: range...range, with: "F")
-    }
-    
     var sdkVersion: String {
-        return "2.7.19amplfinal"
+        return "2.8.0amplfinal"
     }
     
     var osVersion: String {
@@ -48,28 +42,13 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
         return attStatus == .authorized
     }
     
-    func attributionDetails() -> AttributionDetails? {
-            guard let attToken = try? AAAttribution.attributionToken() else {
-                print("Failed to retrieve AAAttribution.attributionToken()")
-                return nil
-            }
-//            
-//            let request = NSMutableURLRequest(url: URL(string: "https://api-adservices.apple.com/api/v1/")!)
-//            request.httpMethod = "POST"
-//            request.setValue("text/plain", forHTTPHeaderField: "Content-Type")
-//            request.httpBody = Data(attToken.utf8)
-//            var result: [String: Any]?
-//            
-//            do {
-//                let (data, _) = try await URLSession.shared.data(for: request as URLRequest)
-//                if var details = try JSONSerialization.jsonObject(with: data, options: .allowFragments) as? [String:Any] {
-//                    details["token"] = attToken
-//                    result = details
-//                }
-//            } catch {
-//                print("Failed request to api-adservices.apple.com. Error: \(error.localizedDescription)")
-//            }
-            
+
+    func attributionDetails() async -> AttributionDetails? {
+        guard let attToken = try? AAAttribution.attributionToken() else {
+            print("Failed to retrieve AAAttribution.attributionToken()")
+            return nil
+        }
+        
         return AttributionDetails(details: ["token": attToken], attributionToken: attToken)
     }
     
