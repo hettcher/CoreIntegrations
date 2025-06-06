@@ -24,8 +24,7 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
     }
     
     var sdkVersion: String {
-        return "2.8.0amplfinal"
-    }
+        return "2.8.1amplfinal"
     
     var osVersion: String {
         let version = UIDevice.current.systemVersion
