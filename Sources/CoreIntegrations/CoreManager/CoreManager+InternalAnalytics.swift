@@ -68,9 +68,9 @@ extension CoreManager {
         analyticsManager?.forceEventsUpload()
     }
     
-    func sendConfigurationDelaied(status: [String: String]) {
+    func sendConfigurationDelayed(status: [String: String]) {
         let internetStatus = ["connection": "\(networkMonitor.isConnected)", "connection_type": networkMonitor.currentConnectionType?.description ?? "unexpected"]
-        InternalAnalyticsEvent.framework_start_delaied.log(parameters: status+internetStatus)
+        InternalAnalyticsEvent.framework_start_delayed.log(parameters: status+internetStatus)
         analyticsManager?.forceEventsUpload()
     }
     

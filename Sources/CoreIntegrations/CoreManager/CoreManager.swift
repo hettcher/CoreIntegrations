@@ -294,7 +294,7 @@ public class CoreManager {
     
     func handleATTAnswered(_ status: ATTrackingManager.AuthorizationStatus, error: Error? = nil) {
         if AppEnvironment.isChina {
-            sendConfigurationDelaied(status: [:])
+            sendConfigurationDelayed(status: [:])
             
             var isReconfigured = false
             networkMonitor.monitorInternetChanges { [weak self] isEnabled in
