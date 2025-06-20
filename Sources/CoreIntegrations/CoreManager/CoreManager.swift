@@ -76,8 +76,7 @@ public class CoreManager {
         }
         
         func handleTestEnvironment(envVariables: [String: String]) -> CoreManagerResult{
-            let xc_network = environmentVariables["xctest_network"] ?? "organic"
-            let xc_activePaywallName = environmentVariables["xctest_activePaywallName"] ?? "none"
+//            let xc_network = environmentVariables["xctest_network"] ?? "organic"
             
             if let xc_screen_style_full = environmentVariables["xc_screen_style_full"] {
                 let screen_style_full = configuration.remoteConfigDataSource.allConfigs.first(where: {$0.key == "subscription_screen_style_full"})
@@ -89,7 +88,11 @@ public class CoreManager {
                 hardPaywall?.updateValue(xc_screen_style_h)
             }
             
-            //            let data = CoreManagerResultData(userSource: CoreUserSource(rawValue: xc_network), activePaywallName: xc_activePaywallName, isActivePaywallDefault: true, paywallsBySource: [CoreUserSource(rawValue: xc_network) : xc_activePaywallName])
+            if let xc_ab_paywall = environmentVariables["xctest_activePaywallName"] {
+                let ab_paywall = configuration.remoteConfigDataSource.allConfigs.first(where: {$0.key == "ab_paywall"})
+                ab_paywall?.updateValue(xc_ab_paywall)
+            }
+            
             let result = CoreManagerResult.finished
             
             purchaseManager = PurchasesManager.shared
