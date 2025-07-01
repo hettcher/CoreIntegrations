@@ -462,7 +462,13 @@ extension CoreManager {
         
         var userAttribution = [String: String]()
         if let networkValue = deepLinkResult["network"] {
-            networkSource = .other(networkValue)
+            if networkValue == "Full_Access" {
+                networkSource = .test_premium
+            } else if networkValue.lowercased() == "tiktok_full_access" {
+                networkSource = .tiktok_full_access
+            } else {
+                networkSource = .other(networkValue)
+            }
             userAttribution = deepLinkResult
         } else if isIPAT {
             networkSource = .ipat
