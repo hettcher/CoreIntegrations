@@ -10,7 +10,7 @@ public enum CoreUserSource: Hashable, Sendable, RawRepresentable, Codable {
     case other(String)
 
     public init(rawValue: String) {
-        switch rawValue.lowercased() {
+        switch rawValue {
         case "organic": self = .organic
         case "Apple Search Ads": self = .asa
         case "ipat": self = .ipat
