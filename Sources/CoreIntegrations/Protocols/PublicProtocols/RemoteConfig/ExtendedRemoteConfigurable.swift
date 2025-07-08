@@ -15,11 +15,9 @@ public protocol ExtendedRemoteConfigurable: RemoteConfigurable {
 public extension ExtendedRemoteConfigurable {
     var value: String {
         get {
-            if stickyBucketed {
-                if stickyBuckettedValue == nil {
-                    setStickyBuckettedValue(with: remoteValue)
-                }
-            } else {
+            if stickyBucketed && stickyBuckettedValue == nil {
+                setStickyBuckettedValue(with: remoteValue)
+            } else if !stickyBucketed && stickyBuckettedValue != nil {
                 setStickyBuckettedValue(with: nil)
             }
             
