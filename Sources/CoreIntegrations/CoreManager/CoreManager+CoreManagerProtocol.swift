@@ -7,6 +7,13 @@ import PurchasesIntegration
 #endif
 
 extension CoreManager: CoreManagerProtocol {
+    public func startSessionReplayRecord() {
+        self.analyticsManager?.startSessionReplayRecord()
+    }
+    
+    public func stopSessionReplayRecord() {
+        self.analyticsManager?.stopSessionReplayRecord()
+    }
     
     @MainActor
     public func purchase(_ purchase: Purchase, activeController: UIViewController?) async -> PurchasesPurchaseResult {

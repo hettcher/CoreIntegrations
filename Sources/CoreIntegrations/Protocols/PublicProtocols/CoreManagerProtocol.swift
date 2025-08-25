@@ -46,4 +46,7 @@ public protocol CoreManagerProtocol {
     
     func restoreAll() async -> PurchasesRestoreResult
     
+    func startSessionReplayRecord()
+    
+    func stopSessionReplayRecord()
 }
