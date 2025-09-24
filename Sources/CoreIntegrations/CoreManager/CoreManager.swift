@@ -135,7 +135,9 @@ public class CoreManager {
             appsflyerManager = AppfslyerManager(config: configuration.appsflyerConfig)
             appsflyerManager?.delegate = self
             
-            facebookManager = FacebookManager()
+            if configuration.isFacebookEnabled {
+                facebookManager = FacebookManager()
+            }
             
             purchaseManager = PurchasesManager.shared
             
