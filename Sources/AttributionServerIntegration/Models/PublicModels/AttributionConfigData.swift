@@ -5,22 +5,27 @@ public struct AttributionConfigData {
     let authToken: AttributionServerToken
     let installServerURLPath: String
     let purchaseServerURLPath: String
+    let externalAuthServerURLPath: String
     let installPath: String
     let purchasePath: String
+    let externalAuthPath: String
     let appsflyerID: String?
     let appEnvironment: String?
     let facebookData: AttributionFacebookModel?
     
-    public init(authToken: AttributionServerToken, installServerURLPath: String, purchaseServerURLPath: String, installPath: String,
-                purchasePath: String, appsflyerID: String?, appEnvironment: String?,
+    public init(authToken: AttributionServerToken, installServerURLPath: String, purchaseServerURLPath: String,
+                externalAuthServerURLPath: String, installPath: String,
+                purchasePath: String, externalAuthPath: String, appsflyerID: String?, appEnvironment: String?,
                 facebookData: AttributionFacebookModel?) {
         self.authToken = authToken
         self.appsflyerID = appsflyerID
         self.facebookData = facebookData
         self.installServerURLPath = installServerURLPath
         self.purchaseServerURLPath = purchaseServerURLPath
+        self.externalAuthServerURLPath = externalAuthServerURLPath
         self.installPath = installPath
         self.purchasePath = purchasePath
+        self.externalAuthPath = externalAuthPath
         self.appEnvironment = appEnvironment
     }
 }
@@ -28,13 +33,18 @@ public struct AttributionConfigData {
 public struct AttributionConfigURLs {
     let installServerURLPath: String
     let purchaseServerURLPath: String
+    let externalAuthServerURLPath: String
     let installPath: String
     let purchasePath: String
+    let externalAuthPath: String
     
-    public init(installServerURLPath: String, purchaseServerURLPath: String, installPath: String, purchasePath: String) {
+    public init(installServerURLPath: String, purchaseServerURLPath: String, externalAuthServerURLPath: String,
+                installPath: String, purchasePath: String, externalAuthPath: String) {
         self.installServerURLPath = installServerURLPath
         self.purchaseServerURLPath = purchaseServerURLPath
         self.installPath = installPath
         self.purchasePath = purchasePath
+        self.externalAuthServerURLPath = externalAuthServerURLPath
+        self.externalAuthPath = externalAuthPath
     }
 }

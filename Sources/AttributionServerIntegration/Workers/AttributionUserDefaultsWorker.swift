@@ -1,4 +1,3 @@
-
 import Foundation
 import UIKit
 
@@ -8,6 +7,7 @@ class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
     fileprivate let installDataKey = "ANALYTICS_DATA_TO_SAVE"
     fileprivate let serverUserIDKey = "ANALYTICS_USER_ID"
     fileprivate let purchaseDataKey = "ANALYTICS_PURCHASE_DATA"
+    fileprivate let externalAuthDataKey = "ANALYTICS_EXTERNAL_AUTH_DATA"
     fileprivate let generatedTokenKey = "ANALYTICS_GENERATED_TOKEN"
     fileprivate let installResult = "ANALYTICS_INSTALL_RESULT"
     fileprivate let uuidKey = "STORED_UUID_KEY"
@@ -85,6 +85,20 @@ class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
         }
         
         userDefaults.set(jsonData, forKey: purchaseDataKey)
+        userDefaults.synchronize()
+    }
+    
+    func getExternalAuthData() -> String? {
+        return userDefaults.string(forKey: externalAuthDataKey)
+    }
+    
+    func saveExternalAuthData(_ externalAuthId: String) {
+        userDefaults.set(externalAuthId, forKey: externalAuthDataKey)
+        userDefaults.synchronize()
+    }
+    
+    func deleteSavedExternalAuthData() {
+        userDefaults.removeObject(forKey: externalAuthDataKey)
         userDefaults.synchronize()
     }
     

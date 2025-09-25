@@ -181,4 +181,8 @@ extension CoreManager: CoreManagerProtocol {
     public func handleNoInternetAlertWasShown() {
         handledNoInternetAlert = true
     }
+    
+    public func setExternalAuthId(_ externalAuthId: String?) {
+        self.internalHanleAuthID(externalAuthId)
+    }
 }

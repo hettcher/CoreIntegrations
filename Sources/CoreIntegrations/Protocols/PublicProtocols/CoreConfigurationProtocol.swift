@@ -13,6 +13,7 @@ public protocol CoreConfigurationProtocol {
     var paywallDataSource: any CorePaywallDataSource { get }
     var useDefaultATTRequest: Bool { get }
     var isFacebookEnabled: Bool { get }
+    var hasExternalAuthorization: Bool { get }
     var configurationTimeout: Int { get }
     var attributionServerDataSource: any AttributionServerDataSource { get }
     var sentryConfigDataSource: (any SentryDataSourceProtocol)? { get }

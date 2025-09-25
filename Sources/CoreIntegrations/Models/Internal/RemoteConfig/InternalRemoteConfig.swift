@@ -12,6 +12,7 @@ enum InternalRemoteConfig: String, CoreRemoteConfigurable {
     
     case install_server_path
     case purchase_server_path
+    case external_auth_server_path
     
     case ab_paywall
     

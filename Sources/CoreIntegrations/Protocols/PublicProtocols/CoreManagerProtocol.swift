@@ -35,6 +35,8 @@ public protocol CoreManagerProtocol {
     
     func handleATTPermission(_ status: ATTrackingManager.AuthorizationStatus)
     func handleNoInternetAlertWasShown()
+    
+    func setExternalAuthId(_ externalAuthId: String?)
 
     func purchase(_ purchase: Purchase, activeController: UIViewController?) async -> PurchasesPurchaseResult
     

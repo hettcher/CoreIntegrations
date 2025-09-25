@@ -154,14 +154,18 @@ public class CoreManager {
             
             let installPath = "/install-application"
             let purchasePath = "/subscribe"
+            let externalAuthPath = "/external-authorization"
             let installURLPath = configuration.attributionServerDataSource.installPath
             let purchaseURLPath = configuration.attributionServerDataSource.purchasePath
-            
+            let externalAuthURLPath = configuration.attributionServerDataSource.externalAuthPath
+
             let attributionConfiguration = AttributionConfigData(authToken: attributionToken,
                                                                  installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
+                                                                 externalAuthServerURLPath: externalAuthURLPath,
                                                                  installPath: installPath,
                                                                  purchasePath: purchasePath,
+                                                                 externalAuthPath: externalAuthPath,
                                                                  appsflyerID: appsflyerToken,
                                                                  appEnvironment: AppEnvironment.current.rawValue,
                                                                  facebookData: facebookData)
@@ -209,6 +213,24 @@ public class CoreManager {
         }
     }
     
+    func internalHanleAuthID(_ authID: String?) {
+        guard configuration?.hasExternalAuthorization != false else {
+            assertionFailure()
+            return
+        }
+        
+        if let authID, authID != "" {
+            analyticsManager?.setUserID(authID)
+        } else {
+            analyticsManager?.clearUserID()
+        }
+        
+        guard let authID else {
+            return
+        }
+        AttributionServerManager.shared.sendExternalAuthorization(externalAuthID: authID)
+    }
+    
     @objc public func applicationDidBecomeActive() {
         configureID()
         
@@ -252,7 +274,9 @@ public class CoreManager {
             facebookManager?.userID = id
             firebaseManager.configure(id: id)
             sentryManager.setUserID(id)
-            self.analyticsManager?.setUserID(id)
+            if configuration?.hasExternalAuthorization != true {
+                analyticsManager?.setUserID(id)
+            }
             remoteConfigManager?.configure(configuration?.remoteConfigDataSource.allConfigs ?? []) { [weak self] in
                 InternalConfigurationEvent.remoteConfigLoaded.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
             }
@@ -358,14 +382,19 @@ extension CoreManager {
     func handleAttributionInstall() {
         let installPath = "/install-application"
         let purchasePath = "/subscribe"
-        
+        let externalAuthPath = "/external-authorization"
+
         let installURLPath = InternalRemoteConfig.install_server_path.internalValue
         let purchaseURLPath = InternalRemoteConfig.purchase_server_path.internalValue
+        let externalAuthURLPath = InternalRemoteConfig.external_auth_server_path.internalValue
+
         if installURLPath != "" && purchaseURLPath != "" {
             let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
+                                                                 externalAuthServerURLPath: externalAuthURLPath,
                                                                  installPath: installPath,
-                                                                 purchasePath: purchasePath)
+                                                                 purchasePath: purchasePath,
+                                                                 externalAuthPath: externalAuthPath)
             
             AttributionServerManager.shared.configureURLs(config: attributionConfiguration)
         } else {
@@ -375,8 +404,10 @@ extension CoreManager {
                 
                 let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                      purchaseServerURLPath: purchaseURLPath,
+                                                                     externalAuthServerURLPath: externalAuthURLPath,
                                                                      installPath: installPath,
-                                                                     purchasePath: purchasePath)
+                                                                     purchasePath: purchasePath,
+                                                                     externalAuthPath: externalAuthPath)
                 
                 AttributionServerManager.shared.configureURLs(config: attributionConfiguration)
             } else {

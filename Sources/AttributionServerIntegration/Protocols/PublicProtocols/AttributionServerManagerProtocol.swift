@@ -11,5 +11,6 @@ public protocol AttributionServerManagerProtocol {
     func configure(config: AttributionConfigData)
     func configureURLs(config: AttributionConfigURLs)
     func syncOnAppStart(_ completion: @escaping (AttributionManagerResult?) -> Void)
+    func sendExternalAuthorization(externalAuthID: String)
     func syncPurchase(data: AttributionPurchaseModel)
 }

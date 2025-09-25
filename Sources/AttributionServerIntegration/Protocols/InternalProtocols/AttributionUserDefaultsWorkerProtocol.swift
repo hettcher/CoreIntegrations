@@ -1,4 +1,3 @@
-
 import Foundation
 
 internal protocol AttributionUserDefaultsWorkerProtocol {
@@ -20,4 +19,9 @@ internal protocol AttributionUserDefaultsWorkerProtocol {
 
     func getServerUserID() -> AttributionUserUUID?
     func saveServerUserID(_ id: AttributionUserUUID)
+    
+    // External Auth Data methods
+    func getExternalAuthData() -> String?
+    func saveExternalAuthData(_ externalAuthId: String)
+    func deleteSavedExternalAuthData()
 }

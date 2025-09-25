@@ -1,4 +1,3 @@
-
 import Foundation
 
 internal protocol AttributionServerWorkerProtocol {
@@ -10,4 +9,7 @@ internal protocol AttributionServerWorkerProtocol {
                                authToken: AttributionServerToken,
                                isBackgroundSession: Bool,
                                completion: @escaping ((Bool) -> Void))
+    func sendExternalAuthorization(parameters: AttributionExternalAuthRequestModel,
+                                   authToken: AttributionServerToken,
+                                   completion: @escaping ((Bool) -> Void))
 }

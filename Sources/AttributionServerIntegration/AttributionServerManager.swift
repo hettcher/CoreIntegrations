@@ -21,14 +21,16 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
         serverWorker = AttributionServerWorker(installServerURLPath: config.installServerURLPath,
                                                        purchaseServerURLPath: config.purchaseServerURLPath,
                                                        installPath: config.installPath,
-                                                       purchasePath: config.purchasePath)
+                                                       purchasePath: config.purchasePath,
+                                               externalAuthPath: config.externalAuthPath)
     }
     
     public func configureURLs(config: AttributionConfigURLs) {
         serverWorker = AttributionServerWorker(installServerURLPath: config.installServerURLPath,
                                                purchaseServerURLPath: config.purchaseServerURLPath,
                                                installPath: config.installPath,
-                                               purchasePath: config.purchasePath)
+                                               purchasePath: config.purchasePath,
+                                               externalAuthPath: config.externalAuthPath)
     }
     
     public func syncOnAppStart(_ completion: @escaping (AttributionManagerResult?) -> Void) {
@@ -52,6 +54,7 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
         }
         
         checkAndSendSavedPurchase(userId: userID)
+        checkAndSendSavedExternalAuth(userId: userID)
     }
     
     public func syncPurchase(data: AttributionPurchaseModel) {
@@ -62,6 +65,17 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
         
         DispatchQueue.global().async {
             self.checkAndSendPurchase(data)
+        }
+    }
+    
+    public func sendExternalAuthorization(externalAuthID: String) {
+        guard authorizationToken != nil else {
+            assertionFailure("TLMAnalyticsSender error: Auth token not found")
+            return
+        }
+        
+        DispatchQueue.global().async {
+            self.checkAndSendExternalAuth(externalAuthID)
         }
     }
 }
@@ -139,10 +153,41 @@ open class AttributionServerManager {
                                                         appsflyerId: appsflyerID,
                                                         iosATT: status,
                                                         environment: appEnvironment,
-                                                        fb: fbFields, sa: saFields)
+                                                        fb: fbFields, 
+                                                        sa: saFields,
+                                                        externalAuthorization: nil)
         return parameters
     }
     
+    fileprivate func getCorrectUUID() -> String {
+        let result: String
+        if #available(iOS 14, *) {
+            let status = ATTrackingManager.trackingAuthorizationStatus
+            if status == .authorized {
+                let idfaOrNil = dataWorker.idfa
+                let uuid = udefWorker.uuid
+                result = idfaOrNil ?? uuid
+            } else {
+                if let savedGeneratedUUID = udefWorker.getGeneratedToken() {
+                    result = savedGeneratedUUID
+                } else {
+                    let generatedUUID = dataWorker.generateUniqueToken()
+                    udefWorker.saveGeneratedToken(generatedUUID)
+                    
+                    result = generatedUUID
+                }
+            }
+        } else {
+            let idfaOrNil = dataWorker.idfa
+            let uuid = udefWorker.uuid
+            result = idfaOrNil ?? uuid
+        }
+        
+        return result
+    }
+}
+ 
+extension AttributionServerManager {
     fileprivate func sendInstallData(_ data: AttributionInstallRequestModel, authToken: AttributionServerToken, completion: @escaping (AttributionManagerResult?) -> Void) {
         serverWorker?.sendInstallAnalytics(parameters: data,
                                            authToken: authorizationToken,
@@ -152,6 +197,49 @@ open class AttributionServerManager {
         }
     }
     
+    fileprivate func handleSendInstallResponse(_ response: [String: String]?, error: Error?,
+                                               parameters: AttributionInstallRequestModel,
+                                               completion: @escaping (AttributionManagerResult?) -> Void) {
+        guard error == nil else {
+            self.installError = error
+            udefWorker.saveInstallData(parameters)
+            completion(nil)
+            return
+        }
+        
+        guard let result = response, let uuid = result["uuid"] as? String else {
+            self.installError = error
+            udefWorker.saveInstallData(parameters)
+            completion(nil)
+            return
+        }
+        
+        self.installError = nil
+        
+        var attributionToSend: [String: String]
+        var isAB = false
+        if let attribution = result as? [String: String] {
+            attributionToSend = attribution
+            attributionToSend.removeValue(forKey: "uuid")
+            attributionToSend.removeValue(forKey: "isAB")
+            isAB = ((attribution["isAB"] ?? "0") as NSString).boolValue
+        } else {
+            attributionToSend = [String: String]()
+        }
+        
+        let idfv = result["idfv"] as? String
+        let attrResult = AttributionManagerResult(userUUID: uuid, idfv: idfv,
+                                              asaAttribution: attributionToSend, isIPAT: isAB)
+        udefWorker.saveInstallResult(attrResult)
+        completion(attrResult)
+        udefWorker.saveServerUserID(uuid)
+        udefWorker.deleteSavedInstallData()
+        checkAndSendSavedPurchase(userId: uuid)
+        checkAndSendSavedExternalAuth(userId: uuid)
+    }
+}
+
+extension AttributionServerManager {
     fileprivate func checkAndSendPurchase(_ details: AttributionPurchaseModel) {
         let userIdOrNil = udefWorker.getServerUserID()
         
@@ -207,46 +295,6 @@ open class AttributionServerManager {
         }
     }
     
-    fileprivate func handleSendInstallResponse(_ response: [String: String]?, error: Error?,
-                                               parameters: AttributionInstallRequestModel,
-                                               completion: @escaping (AttributionManagerResult?) -> Void) {
-        guard error == nil else {
-            self.installError = error
-            udefWorker.saveInstallData(parameters)
-            completion(nil)
-            return
-        }
-        
-        guard let result = response, let uuid = result["uuid"] as? String else {
-            self.installError = error
-            udefWorker.saveInstallData(parameters)
-            completion(nil)
-            return
-        }
-        
-        self.installError = nil
-        
-        var attributionToSend: [String: String]
-        var isAB = false
-        if let attribution = result as? [String: String] {
-            attributionToSend = attribution
-            attributionToSend.removeValue(forKey: "uuid")
-            attributionToSend.removeValue(forKey: "isAB")
-            isAB = ((attribution["isAB"] ?? "0") as NSString).boolValue
-        } else {
-            attributionToSend = [String: String]()
-        }
-        
-        let idfv = result["idfv"] as? String
-        let attrResult = AttributionManagerResult(userUUID: uuid, idfv: idfv,
-                                              asaAttribution: attributionToSend, isIPAT: isAB)
-        udefWorker.saveInstallResult(attrResult)
-        completion(attrResult)
-        udefWorker.saveServerUserID(uuid)
-        udefWorker.deleteSavedInstallData()
-        checkAndSendSavedPurchase(userId: uuid)
-    }
-    
     fileprivate func handleSendPurchaseResult(_ result: Bool,
                                               details: AttributionPurchaseModel) {
         if result == true {
@@ -255,31 +303,50 @@ open class AttributionServerManager {
             udefWorker.savePurchaseData(details)
         }
     }
-    
-    fileprivate func getCorrectUUID() -> String {
-        let result: String
-        if #available(iOS 14, *) {
-            let status = ATTrackingManager.trackingAuthorizationStatus
-            if status == .authorized {
-                let idfaOrNil = dataWorker.idfa
-                let uuid = udefWorker.uuid
-                result = idfaOrNil ?? uuid
-            } else {
-                if let savedGeneratedUUID = udefWorker.getGeneratedToken() {
-                    result = savedGeneratedUUID
-                } else {
-                    let generatedUUID = dataWorker.generateUniqueToken()
-                    udefWorker.saveGeneratedToken(generatedUUID)
-                    
-                    result = generatedUUID
-                }
+}
+
+extension AttributionServerManager {
+    fileprivate func checkAndSendExternalAuth(_ externalAuthId: String, completion: ((Bool) -> Void)? = nil) {
+        let userIdOrNil = udefWorker.getServerUserID()
+        
+        guard let userId = userIdOrNil else {
+            self.udefWorker.saveExternalAuthData(externalAuthId)
+            syncOnAppStart { result in
+                completion?(result != nil)
             }
-        } else {
-            let idfaOrNil = dataWorker.idfa
-            let uuid = udefWorker.uuid
-            result = idfaOrNil ?? uuid
+            return
         }
         
-        return result
+        formAndSendExternalAuth(userId: userId, externalAuthId: externalAuthId, completion: completion)
+    }
+    
+    fileprivate func checkAndSendSavedExternalAuth(userId: String) {
+        let savedDataOrNil = udefWorker.getExternalAuthData()
+        guard let savedData = savedDataOrNil else {
+            return
+        }
+        
+        formAndSendExternalAuth(userId: userId, externalAuthId: savedData)
+    }
+    
+    fileprivate func formAndSendExternalAuth(userId: String, externalAuthId: String, completion: ((Bool) -> Void)? = nil) {
+        let uuid = udefWorker.uuid
+        
+        let parameters = AttributionExternalAuthRequestModel(userId: uuid, productUserId: externalAuthId)
+        
+        serverWorker?.sendExternalAuthorization(parameters: parameters,
+                                               authToken: authorizationToken)
+        { (result) in
+            self.handleSendExternalAuthResult(result, externalAuthId: externalAuthId)
+            completion?(result)
+        }
+    }
+    
+    fileprivate func handleSendExternalAuthResult(_ result: Bool, externalAuthId: String) {
+        if result == true {
+            udefWorker.deleteSavedExternalAuthData()
+        } else {
+            udefWorker.saveExternalAuthData(externalAuthId)
+        }
     }
 }
