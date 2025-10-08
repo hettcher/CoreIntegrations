@@ -37,7 +37,7 @@ public extension ExtendedRemoteConfigurable {
         setManualReassignValue(with: newValue)
     }
     
-    var payload: [String : String]? {
+    var payload: [String : Any]? {
         return internalPayload
     }
     
@@ -89,7 +89,7 @@ extension ExtendedRemoteConfigurable {
         }
     }
     
-    internal var internalPayload: [String: String]? {
+    internal var internalPayload: [String: Any]? {
         get {
             if let _ = ProcessInfo.processInfo.environment["xctest_skip_config"] {
                 return manualReassignedPayload
@@ -109,7 +109,7 @@ extension ExtendedRemoteConfigurable {
         return configManager.getValue(forConfig: self) ?? defaultValue
     }
     
-    internal var remotePayload: [String: String]? {
+    internal var remotePayload: [String: Any]? {
         guard let configManager = CoreManager.internalShared.remoteConfigManager else {
             return nil
         }

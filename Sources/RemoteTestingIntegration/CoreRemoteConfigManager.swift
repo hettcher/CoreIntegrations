@@ -46,7 +46,7 @@ public class CoreRemoteConfigManager: RemoteConfigManager {
         return remoteConfigManager.getValue(forConfig: config)
     }
     
-    public func getPayload(forConfig config: any RemoteConfigurable) -> [String : String]? {
+    public func getPayload(forConfig config: any RemoteConfigurable) -> [String : Any]? {
         return remoteConfigManager.getPayload(forConfig: config)
     }
     

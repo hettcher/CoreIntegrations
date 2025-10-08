@@ -87,8 +87,8 @@ extension AmplitudeExperimentManager: RemoteConfigManager {
         return value
     }
     
-    public func getPayload(forConfig config: any RemoteConfigurable) -> [String : String]? {
-        let payload = client.variant(config.key, fallback: Variant(config.defaultValue)).payload as? [String: String]
+    public func getPayload(forConfig config: any RemoteConfigurable) -> [String : Any]? {
+        let payload = client.variant(config.key, fallback: Variant(config.defaultValue)).payload as? [String: Any]
         return payload
     }
     

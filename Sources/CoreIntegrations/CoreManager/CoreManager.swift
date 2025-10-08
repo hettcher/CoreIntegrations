@@ -359,8 +359,8 @@ extension CoreManager {
         let installPath = "/install-application"
         let purchasePath = "/subscribe"
         
-        let installURLPath = InternalRemoteConfig.install_server_path.internalPayload?.first?.value ?? ""
-        let purchaseURLPath = InternalRemoteConfig.purchase_server_path.internalPayload?.first?.value ?? ""
+        let installURLPath = (InternalRemoteConfig.install_server_path.internalPayload?.first?.value as? String) ?? ""
+        let purchaseURLPath = (InternalRemoteConfig.purchase_server_path.internalPayload?.first?.value as? String) ?? ""
         if installURLPath != "" && purchaseURLPath != "" {
             let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
