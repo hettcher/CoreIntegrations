@@ -3,6 +3,7 @@ import Foundation
 
 public protocol CoreManagerDelegate: AnyObject {
     func coreInitialConfigurationFinished()
+    func coreInitialRemoteConfigurationFinished()
     
     func coreConfigurationFinished(result: CoreManagerResult)
     

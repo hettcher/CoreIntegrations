@@ -256,6 +256,7 @@ public class CoreManager {
             self.delegate?.coreInitialConfigurationFinished()
             remoteConfigManager?.configure(configuration?.remoteConfigDataSource.allConfigs ?? []) { [weak self] in
                 InternalConfigurationEvent.remoteConfigLoaded.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
+                self?.delegate?.coreInitialRemoteConfigurationFinished()
             }
             
         }
