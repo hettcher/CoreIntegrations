@@ -2,6 +2,8 @@
 import Foundation
 
 public protocol CoreManagerDelegate: AnyObject {
+    func coreInitialConfigurationFinished()
+    
     func coreConfigurationFinished(result: CoreManagerResult)
     
     func coreConfiguration(didReceive deepLinkResult: [AnyHashable : Any])

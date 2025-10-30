@@ -253,9 +253,11 @@ public class CoreManager {
             firebaseManager.configure(id: id)
             sentryManager.setUserID(id)
             self.analyticsManager?.setUserID(id)
+            self.delegate?.coreInitialConfigurationFinished()
             remoteConfigManager?.configure(configuration?.remoteConfigDataSource.allConfigs ?? []) { [weak self] in
                 InternalConfigurationEvent.remoteConfigLoaded.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
             }
+            
         }
     }
     
