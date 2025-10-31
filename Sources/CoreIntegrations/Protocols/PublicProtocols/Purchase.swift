@@ -181,6 +181,16 @@ public struct Purchase: Hashable {
         }
     }
     
+    public var hasOffers: Bool {
+        get async {
+            guard let subscription = product.subscription,
+                  let introOffer = subscription.introductoryOffer else {
+                return false
+            }
+            return true
+        }
+    }
+    
 }
 
 
