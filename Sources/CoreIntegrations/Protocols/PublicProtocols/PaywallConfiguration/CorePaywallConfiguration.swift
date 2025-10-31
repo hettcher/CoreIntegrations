@@ -18,6 +18,23 @@ public extension CorePaywallConfiguration {
         return result
     }
     
+    var isTrialPaywall: Bool {
+        get async {
+            let result = await CoreManager.internalShared.purchases(config: self)
+            
+            if case .success(let purchases) = result {
+                for purchase in purchases {
+                    let mode = await purchase.paymentMode
+                    if mode != .notTrial {
+                        return true
+                    }
+                }
+            }
+            
+            return false
+        }
+    }
+    
 }
 
 extension CorePaywallConfiguration {
