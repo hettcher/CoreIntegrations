@@ -161,4 +161,32 @@ public struct Purchase: Hashable {
         }
     }
     
+    public var paymentMode: PurchasePaymentMode {
+        get async {
+            guard let subscription = product.subscription,
+                  let introOffer = subscription.introductoryOffer else {
+                return .notTrial
+            }
+            
+            guard await subscription.isEligibleForIntroOffer else {
+                return .notTrial
+            }
+            
+            switch introOffer.paymentMode {
+            case .freeTrial: return .freeTrial
+            case .payUpFront: return .payUpFront
+            case .payAsYouGo: return .payAsYouGo
+            default: return .notTrial
+            }
+        }
+    }
+    
+}
+
+
+public enum PurchasePaymentMode {
+    case freeTrial
+    case payUpFront
+    case payAsYouGo
+    case notTrial
 }
