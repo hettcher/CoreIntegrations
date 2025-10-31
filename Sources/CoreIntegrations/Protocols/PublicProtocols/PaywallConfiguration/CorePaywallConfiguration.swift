@@ -92,6 +92,6 @@ extension CorePaywallConfiguration {
 
 
 public struct PaywallTrialInfo {
-    var containsOffers: Bool
-    var isEligibleForOffer: Bool
+    public var containsOffers: Bool
+    public var isEligibleForOffer: Bool
 }
