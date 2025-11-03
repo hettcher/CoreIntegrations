@@ -10,6 +10,7 @@ import AmplitudeExperiment
 public protocol ExtendedRemoteConfigurable: RemoteConfigurable {
     var boolValue: Bool { get }
     func updateValue(_ newValue: String?)
+    func updatePayload(_ newValue: [String: String]?)
 }
 
 public extension ExtendedRemoteConfigurable {
@@ -34,6 +35,14 @@ public extension ExtendedRemoteConfigurable {
     
     func updateValue(_ newValue: String?) {
         setManualReassignValue(with: newValue)
+    }
+    
+    var payload: [String : Any]? {
+        return internalPayload
+    }
+    
+    func updatePayload(_ newValue: [String: String]?) {
+        setManualReassignPayload(with: newValue)
     }
     
     var boolValue: Bool {
@@ -79,6 +88,16 @@ extension ExtendedRemoteConfigurable {
             return manualReassignedValue ?? internalReassignedValue ?? stickyBuckettedValue ?? remoteValue
         }
     }
+    
+    internal var internalPayload: [String: Any]? {
+        get {
+            if let _ = ProcessInfo.processInfo.environment["xctest_skip_config"] {
+                return manualReassignedPayload
+            }
+            
+            return manualReassignedPayload ?? remotePayload
+        }
+    }
 }
 
 extension ExtendedRemoteConfigurable {
@@ -88,6 +107,14 @@ extension ExtendedRemoteConfigurable {
         }
         
         return configManager.getValue(forConfig: self) ?? defaultValue
+    }
+    
+    internal var remotePayload: [String: Any]? {
+        guard let configManager = CoreManager.internalShared.remoteConfigManager else {
+            return nil
+        }
+        
+        return configManager.getPayload(forConfig: self)
     }
 }
 
@@ -99,6 +126,15 @@ extension ExtendedRemoteConfigurable {
     
     private func setManualReassignValue(with newValue: String?) {
         UserDefaults.standard.setValue(newValue, forKey: key)
+    }
+    
+    private var manualReassignedPayload: [String: String]? {
+        let savedPayload = UserDefaults.standard.object(forKey: "coreintegrations_" + key + "_payload") as? [String: String]
+        return savedPayload
+    }
+    
+    private func setManualReassignPayload(with newPayload: [String: String]?) {
+        UserDefaults.standard.setValue(newPayload, forKey: "coreintegrations_" + key + "_payload")
     }
 }
 

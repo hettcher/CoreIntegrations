@@ -6,5 +6,6 @@ public protocol RemoteConfigurable {
     var defaultValue: String { get }
     var value: String { get }
     var stickyBucketed: Bool { get }
+    var payload: [String: Any]? { get }
 }
 
