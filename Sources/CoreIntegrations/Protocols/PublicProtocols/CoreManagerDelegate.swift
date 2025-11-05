@@ -6,6 +6,7 @@ public protocol CoreManagerDelegate: AnyObject {
     func coreInitialRemoteConfigurationFinished()
     
     func coreConfigurationFinished(result: CoreManagerResult)
+    func coreConfigurationUpdated()
     
     func coreConfiguration(didReceive deepLinkResult: [AnyHashable : Any])
     func coreConfiguration(handleDeeplinkError error: Error)

@@ -61,8 +61,6 @@ public extension CorePaywallConfiguration {
             )
         }
     }
-
-    
 }
 
 extension CorePaywallConfiguration {
@@ -89,7 +87,6 @@ extension CorePaywallConfiguration {
         return PurchaseIdentifier.allCases as! [Self.PurchaseIdentifier]
     }
 }
-
 
 public struct PaywallTrialInfo {
     public var containsOffers: Bool

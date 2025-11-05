@@ -448,6 +448,9 @@ extension CoreManager {
                 
                 remoteConfigManager?.updateRemoteConfig(attributionDict) { [weak self] in
                     InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
+                    if isUpdated {
+                        self?.delegate?.coreConfigurationUpdated()
+                    }
                 }
             }
         } else {
