@@ -132,7 +132,9 @@ public class CoreManager {
             appsflyerManager = AppfslyerManager(config: configuration.appsflyerConfig)
             appsflyerManager?.delegate = self
             
-            facebookManager = FacebookManager()
+            if configuration.isFacebookEnabled {
+                facebookManager = FacebookManager()
+            }
             
             purchaseManager = PurchasesManager.shared
             
@@ -440,6 +442,9 @@ extension CoreManager {
                 
                 remoteConfigManager?.updateRemoteConfig(attributionDict) { [weak self] in
                     InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
+                    if isUpdated {
+                        self?.delegate?.coreConfigurationUpdated()
+                    }
                 }
             }
         } else {

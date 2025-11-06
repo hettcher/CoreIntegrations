@@ -56,10 +56,6 @@ public extension ExtendedRemoteConfigurable {
 }
 
 extension ExtendedRemoteConfigurable {
-    private func updateInternalValue(_ newValue: String?) {
-        setInternalManualReassignValue(with: newValue)
-    }
-    
     private func exposure() {
         guard let configManager = CoreManager.internalShared.remoteConfigManager else {
             return
@@ -76,7 +72,7 @@ extension ExtendedRemoteConfigurable {
                 return manualReassignedValue ?? defaultValue
             }
             
-            return manualReassignedValue ?? internalReassignedValue ?? stickyBuckettedValue ?? remoteValue
+            return manualReassignedValue ?? stickyBuckettedValue ?? remoteValue
         }
     }
 }
@@ -93,12 +89,12 @@ extension ExtendedRemoteConfigurable {
 
 extension ExtendedRemoteConfigurable {
     private var manualReassignedValue: String? {
-        let savedValue = UserDefaults.standard.object(forKey: key) as? String
+        let savedValue = UserDefaults.standard.object(forKey: "internal"+key) as? String
         return savedValue
     }
     
     private func setManualReassignValue(with newValue: String?) {
-        UserDefaults.standard.setValue(newValue, forKey: key)
+        UserDefaults.standard.setValue(newValue, forKey: "internal"+key)
     }
 }
 
@@ -128,14 +124,3 @@ extension ExtendedRemoteConfigurable {
     }
 }
 
-// Not used in this version anymore, but must be for old versions support
-extension ExtendedRemoteConfigurable {
-    private var internalReassignedValue: String? {
-        let savedValue = UserDefaults.standard.object(forKey: "internal"+key) as? String
-        return savedValue
-    }
-    
-    private func setInternalManualReassignValue(with newValue: String?) {
-        UserDefaults.standard.setValue(newValue, forKey: "internal"+key)
-    }
-}

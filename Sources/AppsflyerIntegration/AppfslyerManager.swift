@@ -34,30 +34,28 @@ public class AppfslyerManager: NSObject {
     
     private func parseDeepLink(_ conversionInfo: [AnyHashable : Any]) -> [String: String] {
         var appsFlyerProperties = [String: String]()
-        let network = conversionInfo["media_source"] as? String
-        if let network {
-            appsFlyerProperties["network"] = network
+
+        var parsingKeys = [
+            "media_source": "network",
+            "campaign": "campaignName",
+            "af_adset": "adGroupName",
+            "af_ad": "ad",
+            "deep_link_value": "deep_link_value",
+            "af_dp": "deep_link_value"
+        ]
+
+        for key in conversionInfo.keys {
+            if let conversionKey = key as? String, let conversionValue = conversionInfo[key] as? String {
+                let keyToSave: String
+                if parsingKeys.keys.contains(conversionKey), let newKey = parsingKeys[conversionKey] {
+                    keyToSave = newKey
+                } else {
+                    keyToSave = conversionKey
+                }
+                appsFlyerProperties[keyToSave] = conversionValue
+            }
         }
         
-        let campaign = conversionInfo["campaign"] as? String
-        if let campaign {
-            appsFlyerProperties["campaignName"] = campaign
-        }
-        let adSet = conversionInfo["af_adset"] as? String
-        if let adSet {
-            appsFlyerProperties["adGroupName"] = adSet
-        }
-        let ad = conversionInfo["af_ad"] as? String
-        if let ad {
-            appsFlyerProperties["ad"] = ad
-        }
-        let dpValue = conversionInfo["deep_link_value"] as? String
-        let dpValue1 = conversionInfo["af_dp"] as? String
-        if let dpValue {
-            appsFlyerProperties["deep_link_value"] = dpValue
-        } else if let dpValue1 {
-            appsFlyerProperties["deep_link_value"] = dpValue1
-        }
         return appsFlyerProperties
     }
 }

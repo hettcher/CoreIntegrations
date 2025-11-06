@@ -12,12 +12,15 @@ public protocol CoreConfigurationProtocol {
     var initialConfigurationDataSource: (any ConfigurationEventsDataSource)? { get }
     var paywallDataSource: any CorePaywallDataSource { get }
     var useDefaultATTRequest: Bool { get }
+    var isFacebookEnabled: Bool { get }
     var configurationTimeout: Int { get }
     var attributionServerDataSource: any AttributionServerDataSource { get }
     var sentryConfigDataSource: (any SentryDataSourceProtocol)? { get }
 }
 
 public extension CoreConfigurationProtocol {
+    var isFacebookEnabled: Bool { return true }
+    
     var useDefaultATTRequest: Bool { return true }
     
     var configurationTimeout: Int {
