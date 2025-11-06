@@ -27,7 +27,7 @@ public extension CoreAnalyticsDataSource {
     }
     
     var sessionReplayStartOnLaunch: Bool {
-        return false
+        return true
     }
     
     var sessionReplaySampleRate: Float {
@@ -35,7 +35,7 @@ public extension CoreAnalyticsDataSource {
     }
     
     var sessionReplayEnableRemoteConfig: Bool {
-        return false
+        return true
     }
 }
 
