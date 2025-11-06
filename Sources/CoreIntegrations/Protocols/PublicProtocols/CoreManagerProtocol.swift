@@ -48,6 +48,10 @@ public protocol CoreManagerProtocol {
     
     func restoreAll() async -> PurchasesRestoreResult
     
+    func startSessionReplayRecord()
+    
+    func stopSessionReplayRecord()
+    
 }
 
 public struct UserInfo: Codable {
