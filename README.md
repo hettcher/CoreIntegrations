@@ -1,3 +1,3 @@
 # CoreIntegrations
 
-Framework version - 2.9.6amplfinal+payload
+Framework version - 2.10.0amplfinal+payload
