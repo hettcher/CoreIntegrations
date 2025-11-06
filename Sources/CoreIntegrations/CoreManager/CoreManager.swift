@@ -115,10 +115,7 @@ public class CoreManager {
             analyticsManager = AnalyticsManager.shared
             
             let amplitudeCustomURL = configuration.amplitudeDataSource.customServerURL
-            
-            analyticsManager?.configure(appKey: configuration.appSettings.amplitudeSecret,
-                                        cnConfig: AppEnvironment.isChina,
-                                        customURL: amplitudeCustomURL)
+            analyticsManager?.configure(data: .init(appKey: configuration.appSettings.amplitudeSecret, cnConfig: AppEnvironment.isChina, customURL: amplitudeCustomURL, sessionReplayConfig: .init(startOnLaunch: configuration.amplitudeDataSource.sessionReplayStartOnLaunch, sampleRate: configuration.amplitudeDataSource.sessionReplaySampleRate, enableRemoteConfig: configuration.amplitudeDataSource.sessionReplayEnableRemoteConfig)))
             
             sendStoreCountryUserProperty()
             configuration.appSettings.launchCount += 1
@@ -476,6 +473,9 @@ extension CoreManager {
                 
                 remoteConfigManager?.updateRemoteConfig(attributionDict) { [weak self] in
                     InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
+                    if isUpdated {
+                        self?.delegate?.coreConfigurationUpdated()
+                    }
                 }
             }
         } else {

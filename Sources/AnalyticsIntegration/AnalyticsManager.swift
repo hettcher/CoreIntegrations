@@ -1,6 +1,7 @@
 
 import UIKit
 import Amplitude
+import AmplitudeiOSSessionReplayMiddleware
 
 public class AnalyticsManager {
     var printDebugAnalytics: Bool {
@@ -10,15 +11,40 @@ public class AnalyticsManager {
     // MARK: - Properties
     public static var shared = AnalyticsManager()
     
+    private var sessionReplayPlugin:AmplitudeiOSSessionReplayMiddleware? = nil
+    
     // MARK: - MethodsforceEventsUpload
     
-    public func configure(appKey: String, cnConfig: Bool, customURL: String?) {
-        Amplitude.instance().initializeApiKey(appKey)
+    public func configure(data: AmplitudeConfigData) {
+        sessionReplayPlugin = AmplitudeiOSSessionReplayMiddleware(sampleRate: data.sessionReplayConfig.sampleRate, enableRemoteConfig: data.sessionReplayConfig.enableRemoteConfig)
+        
+        if data.sessionReplayConfig.startOnLaunch {
+            startSessionReplayRecord()
+        }
+        
+        Amplitude.instance().initializeApiKey(data.appKey)
         Amplitude.instance().defaultTracking.sessions = true
         Amplitude.instance().minTimeBetweenSessionsMillis = 0
-//        Amplitude.instance().useDynamicConfig = useDynamicConfig
-        if let customURL, cnConfig == true {
+        
+        if let customURL = data.customURL, data.cnConfig == true {
             Amplitude.instance().setServerUrl(customURL)
+        }
+    }
+    
+    
+    public func startSessionReplayRecord() {
+        if let sessionReplayPlugin = sessionReplayPlugin {
+            Amplitude.instance().addEventMiddleware(sessionReplayPlugin)
+        } else {
+            assertionFailure()
+        }
+    }
+    
+    public func stopSessionReplayRecord() {
+        if let sessionReplayPlugin = sessionReplayPlugin {
+            Amplitude.instance().removeEventMiddleware(sessionReplayPlugin)
+        } else {
+            assertionFailure()
         }
     }
     
