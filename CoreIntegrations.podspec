@@ -33,5 +33,7 @@ Pod::Spec.new do |s|
   s.dependency 'AnalyticsConnector'
   s.dependency 'AmplitudeExperiment'
   s.dependency 'Sentry'
+  s.dependency 'AmplitudeSessionReplay', :git => 'https://github.com/amplitude/AmplitudeSessionReplay-iOS.git'
+  s.dependency 'AmplitudeiOSSessionReplayMiddleware', :git => 'https://github.com/amplitude/AmplitudeSessionReplay-iOS.git'
   
 end
