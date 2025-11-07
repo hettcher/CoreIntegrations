@@ -37,7 +37,7 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
     }
     
     var sdkVersion: String {
-        return "1.1.0f"
+        return "1.1.1f"
     }
     
     var osVersion: String {
