@@ -174,6 +174,7 @@ extension CoreManager: CoreManagerProtocol {
     
     public func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         appsflyerManager?.application(application, didRegisterForRemoteNotificationsWithDeviceToken: deviceToken)
+        firebaseManager.registerForRemoteNotifications(deviceToken: deviceToken)
     }
     
     public func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void) {
