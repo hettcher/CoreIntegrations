@@ -1,3 +1,3 @@
 # CoreIntegrations
 
-Framework version - 2.10.0amplfinal_fcm
+Framework version - 2.10.1amplfinal_fcm

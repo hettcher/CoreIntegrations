@@ -612,8 +612,11 @@ extension CoreManager {
               let localization = configuration?.appLocalization else {
             return
         }
+        
         AttributionServerManager.shared.checkAndSendSavedFCMToken(fcmToken: fcmToken, userId: userId, localization: localization) { success in
             print("FCM token sent successfully? \(success)")
         }
+        
+        self.delegate?.coreConfiguration(fcmTokenUpdated: fcmToken)
     }
 }
