@@ -613,8 +613,8 @@ extension CoreManager {
             return
         }
         
-        AttributionServerManager.shared.checkAndSendSavedFCMToken(fcmToken: fcmToken, userId: userId, localization: localization) { success in
-            print("FCM token sent successfully? \(success)")
+        AttributionServerManager.shared.checkAndSendSavedFCMToken(fcmToken: fcmToken, userId: userId, localization: localization) { result in
+            print("FCM token sent successfully - \(result)")
         }
         
         self.delegate?.coreConfiguration(fcmTokenUpdated: fcmToken)

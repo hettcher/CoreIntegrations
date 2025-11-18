@@ -302,13 +302,13 @@ open class AttributionServerManager {
         }
     }
     
-    public func checkAndSendSavedFCMToken(fcmToken: String, userId: String, localization: String, completion: @escaping (Bool) -> Void) {
+    public func checkAndSendSavedFCMToken(fcmToken: String, userId: String, localization: String, completion: @escaping (FcmTokenUpdateResult) -> Void) {
         if let savedToken = udefWorker.getFCMToken(), savedToken != fcmToken {
             sendFCMToken(userId: userId, fcmToken: fcmToken, localization: localization) { success in
-                completion(success)
+                completion(success ? .updated : .failed)
             }
         } else{
-            completion(true)
+            completion(.notRequired)
         }
     }
 }
