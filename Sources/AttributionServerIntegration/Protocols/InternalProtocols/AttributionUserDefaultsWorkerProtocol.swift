@@ -20,4 +20,7 @@ internal protocol AttributionUserDefaultsWorkerProtocol {
 
     func getServerUserID() -> AttributionUserUUID?
     func saveServerUserID(_ id: AttributionUserUUID)
+    
+    func getFCMToken() -> String?
+    func saveFCMToken(_ token: String)
 }

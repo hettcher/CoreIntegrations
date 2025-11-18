@@ -8,6 +8,10 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
         return udefWorker.getServerUserID()
     }
     
+    public var fcmToken: String? {
+        return udefWorker.getFCMToken()
+    }
+    
     public var installResultData: AttributionManagerResult? {
         return udefWorker.getInstallResult()
     }
@@ -21,14 +25,16 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
         serverWorker = AttributionServerWorker(installServerURLPath: config.installServerURLPath,
                                                        purchaseServerURLPath: config.purchaseServerURLPath,
                                                        installPath: config.installPath,
-                                                       purchasePath: config.purchasePath)
+                                                       purchasePath: config.purchasePath,
+                                               tokensPath: config.tokensPath)
     }
     
     public func configureURLs(config: AttributionConfigURLs) {
         serverWorker = AttributionServerWorker(installServerURLPath: config.installServerURLPath,
                                                purchaseServerURLPath: config.purchaseServerURLPath,
                                                installPath: config.installPath,
-                                               purchasePath: config.purchasePath)
+                                               purchasePath: config.purchasePath,
+                                               tokensPath: config.tokensPath)
     }
     
     public func syncOnAppStart(_ completion: @escaping (AttributionManagerResult?) -> Void) {
@@ -281,5 +287,28 @@ open class AttributionServerManager {
         }
         
         return result
+    }
+    
+    fileprivate func sendFCMToken(userId: String, fcmToken: String, localization: String, completion: @escaping (Bool) -> Void) {
+        let parameters = AttributionTokenRequestModel(userId: userId, fcmToken: fcmToken, localization: localization)
+        
+        serverWorker?.sendFCMToken(parameters: parameters,
+                                   authToken: authorizationToken,
+                                   isBackgroundSession: false) { success in
+            if success {
+                self.udefWorker.saveFCMToken(fcmToken)
+            }
+            completion(success)
+        }
+    }
+    
+    public func checkAndSendSavedFCMToken(fcmToken: String, userId: String, localization: String, completion: @escaping (Bool) -> Void) {
+        if let savedToken = udefWorker.getFCMToken(), savedToken != fcmToken {
+            sendFCMToken(userId: userId, fcmToken: fcmToken, localization: localization) { success in
+                completion(success)
+            }
+        } else{
+            completion(true)
+        }
     }
 }
