@@ -165,7 +165,8 @@ public class CoreManager {
                                                                  externalAuthPath: externalAuthPath,
                                                                  appsflyerID: appsflyerToken,
                                                                  appEnvironment: AppEnvironment.current.rawValue,
-                                                                 facebookData: facebookData)
+                                                                 facebookData: facebookData,
+                                                                 hasExternalAuth: configuration.hasExternalAuthorization)
             
             AttributionServerManager.shared.configure(config: attributionConfiguration)
         }

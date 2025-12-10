@@ -17,6 +17,7 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
         self.appsflyerID = config.appsflyerID
         self.appEnvironment = config.appEnvironment
         authorizationToken = config.authToken
+        shouldAwaitExternalAuth = config.hasExternalAuth
         
         serverWorker = AttributionServerWorker(installServerURLPath: config.installServerURLPath,
                                                        purchaseServerURLPath: config.purchaseServerURLPath,
@@ -95,6 +96,7 @@ open class AttributionServerManager {
     var facebookData: AttributionFacebookModel? = nil
     var appsflyerID: String? = nil
     var appEnvironment: String? = nil
+    var shouldAwaitExternalAuth: Bool? = nil
         
     fileprivate func validateToken(_ token: AttributionServerToken?) -> Bool {
         guard authorizationToken != nil else {
@@ -155,7 +157,7 @@ open class AttributionServerManager {
                                                         environment: appEnvironment,
                                                         fb: fbFields, 
                                                         sa: saFields,
-                                                        externalAuthorization: nil)
+                                                        externalAuthorization: shouldAwaitExternalAuth)
         return parameters
     }
     

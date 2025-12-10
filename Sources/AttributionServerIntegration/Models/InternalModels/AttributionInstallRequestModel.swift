@@ -16,7 +16,7 @@ internal struct AttributionInstallRequestModel: Codable {
     let fb: FBFields?
     let sa: SAFields?
     
-    let externalAuthorization: String?
+    let externalAuthorization: Bool?
     
     internal struct FBFields: Codable {
         let userId: String
