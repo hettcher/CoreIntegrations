@@ -30,7 +30,8 @@ public class AttributionServerWorker {
     }
     
     fileprivate var externalAuthURL: URL? {
-        let urlPath = "\(installServerURLPath)\(externalAuthPath)"
+        let trimInstallServerURLPath = installServerURLPath.replacingOccurrences(of: "/attribute", with: "")
+        let urlPath = "\(trimInstallServerURLPath)\(externalAuthPath)"
         let urlOrNil = URL(string: urlPath)
         return urlOrNil
     }
