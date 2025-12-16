@@ -10,7 +10,7 @@ import AmplitudeExperiment
 public protocol ExtendedRemoteConfigurable: RemoteConfigurable {
     var boolValue: Bool { get }
     func updateValue(_ newValue: String?)
-    func updatePayload(_ newValue: [String: String]?)
+    func updatePayload(_ newValue: [String: Any]?)
 }
 
 public extension ExtendedRemoteConfigurable {
@@ -41,7 +41,7 @@ public extension ExtendedRemoteConfigurable {
         return internalPayload
     }
     
-    func updatePayload(_ newValue: [String: String]?) {
+    func updatePayload(_ newValue: [String: Any]?) {
         setManualReassignPayload(with: newValue)
     }
     
@@ -124,12 +124,12 @@ extension ExtendedRemoteConfigurable {
         UserDefaults.standard.setValue(newValue, forKey: "internal"+key)
     }
     
-    private var manualReassignedPayload: [String: String]? {
+    private var manualReassignedPayload: [String: Any]? {
         let savedPayload = UserDefaults.standard.object(forKey: "coreintegrations_" + key + "_payload") as? [String: String]
         return savedPayload
     }
     
-    private func setManualReassignPayload(with newPayload: [String: String]?) {
+    private func setManualReassignPayload(with newPayload: [String: Any]?) {
         UserDefaults.standard.setValue(newPayload, forKey: "coreintegrations_" + key + "_payload")
     }
 }
