@@ -125,7 +125,7 @@ extension ExtendedRemoteConfigurable {
     }
     
     private var manualReassignedPayload: [String: Any]? {
-        let savedPayload = UserDefaults.standard.object(forKey: "coreintegrations_" + key + "_payload") as? [String: String]
+        let savedPayload = UserDefaults.standard.object(forKey: "coreintegrations_" + key + "_payload") as? [String: Any]
         return savedPayload
     }
     
