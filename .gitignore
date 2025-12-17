@@ -1,4 +1,11 @@
+# Xcode
+xcuserdata/
+DerivedData/
 
-.swiftpm/xcode/package.xcworkspace/xcuserdata/anzhy.xcuserdatad/UserInterfaceState.xcuserstate
-.swiftpm/xcode/package.xcworkspace/xcuserdata/anatolii.kanarskyi.xcuserdatad/UserInterfaceState.xcuserstate
-.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+# SwiftPM
+.swiftpm/xcode/
+.build/
+
+# User-specific Xcode files
+*.xcuserstate
+*.xcbkptlist
