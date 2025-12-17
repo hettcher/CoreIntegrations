@@ -1,7 +1,8 @@
 
 import UIKit
-import Amplitude
-import AmplitudeiOSSessionReplayMiddleware
+import AmplitudeSwift
+import AmplitudeSwiftSessionReplayPlugin
+
 
 public class AnalyticsManager {
     var printDebugAnalytics: Bool {
@@ -11,30 +12,31 @@ public class AnalyticsManager {
     // MARK: - Properties
     public static var shared = AnalyticsManager()
     
-    private var sessionReplayPlugin:AmplitudeiOSSessionReplayMiddleware? = nil
+    private var amplitude: Amplitude?
+    
+    private var sessionReplayPlugin:AmplitudeSwiftSessionReplayPlugin? = nil
     
     // MARK: - MethodsforceEventsUpload
     
     public func configure(data: AmplitudeConfigData) {
-        sessionReplayPlugin = AmplitudeiOSSessionReplayMiddleware(sampleRate: data.sessionReplayConfig.sampleRate, enableRemoteConfig: data.sessionReplayConfig.enableRemoteConfig)
+        sessionReplayPlugin = AmplitudeSwiftSessionReplayPlugin(sampleRate: data.sessionReplayConfig.sampleRate, enableRemoteConfig: data.sessionReplayConfig.enableRemoteConfig)
         
         if data.sessionReplayConfig.startOnLaunch {
             startSessionReplayRecord()
         }
         
-        Amplitude.instance().initializeApiKey(data.appKey)
-        Amplitude.instance().defaultTracking.sessions = true
-        Amplitude.instance().minTimeBetweenSessionsMillis = 0
+        amplitude = Amplitude(configuration: Configuration(apiKey: data.appKey, autocapture: .all))
+        amplitude?.configuration.minTimeBetweenSessionsMillis = 0 // 10000
         
         if let customURL = data.customURL, data.cnConfig == true {
-            Amplitude.instance().setServerUrl(customURL)
+            amplitude?.configuration.serverUrl = customURL
         }
     }
     
     
     public func startSessionReplayRecord() {
         if let sessionReplayPlugin = sessionReplayPlugin {
-            Amplitude.instance().addEventMiddleware(sessionReplayPlugin)
+            amplitude?.add(plugin: sessionReplayPlugin)
         } else {
             assertionFailure()
         }
@@ -42,21 +44,22 @@ public class AnalyticsManager {
     
     public func stopSessionReplayRecord() {
         if let sessionReplayPlugin = sessionReplayPlugin {
-            Amplitude.instance().removeEventMiddleware(sessionReplayPlugin)
+            amplitude?.remove(plugin: sessionReplayPlugin)
         } else {
             assertionFailure()
         }
     }
     
     public func forceEventsUpload() {
-        Amplitude.instance().uploadEvents()
+        amplitude?.flush()
     }
     
     public func setUserID(_ userID: String) {
-        guard userID != Amplitude.instance().userId else {
+        guard userID != amplitude?.getUserId() else {
             return
         }
-        Amplitude.instance().setUserId(userID, startNewSession: false)
+        
+        amplitude?.setUserId(userId: userID)
     }
     
     internal func sendCohort() {
@@ -78,12 +81,12 @@ public class AnalyticsManager {
         let dayOfYear = calendar.ordinality(of: .day, in: .year, for: date)! as Any
         let weekOfYear = calendar.ordinality(of: .weekOfYear, in: .year, for: date)! as Any
         
-        let identify = AMPIdentify()
-        identify.setOnce("cohort_date", value: dayOfYear as? NSObject)
-        identify.setOnce("cohort_week", value: weekOfYear as? NSObject)
-        identify.setOnce("cohort_month", value: monthOfYear as? NSObject)
+        let identify = Identify()
+        identify.setOnce(property: "cohort_date", value: dayOfYear)
+        identify.setOnce(property: "cohort_week", value: weekOfYear)
+        identify.setOnce(property: "cohort_month", value: monthOfYear)
         
-        Amplitude.instance().identify(identify)
+        amplitude?.identify(identify: identify)
     }
     
     func saveAttributionDetails(_ attributionDetails: [String : NSObject]?) {
@@ -91,63 +94,53 @@ public class AnalyticsManager {
             return
         }
         
-        let identify = AMPIdentify()
+        let identify = Identify()
         details.keys.forEach { key in
-            identify.set(key, value: details[key] as NSObject?)
+            identify.set(property: key, value: details[key])
         }
-        Amplitude.instance().identify(identify)
+        amplitude?.identify(identify: identify)
     }
     
-    func amplitudeLog(event: String, with properties: [AnyHashable: Any] = [String: Any]()) {
+    func amplitudeLog(event: String, with properties: [String: Any] = [String: Any]()) {
         if properties.isEmpty {
-            Amplitude.instance().logEvent(event)
+            amplitude?.track(eventType: event)
         } else {
-            Amplitude.instance().logEvent(event, withEventProperties: properties)
+            amplitude?.track(
+                eventType: event,
+                eventProperties: properties
+            )
         }
         
         if printDebugAnalytics {
             if properties.isEmpty {
-                print("Analytics logged \(event.uppercased())")
+                print("Amplitude logged \(event.uppercased())")
             } else {
-                print("Analytics logged \(event.uppercased()), values \(properties)")
+                print("Amplitude logged \(event.uppercased()), properties \(properties)")
             }
         }
         
-#warning("Should be removed after tests")
-        Amplitude.instance().uploadEvents()
+        amplitude?.flush()
     }
     
     func amplitudeIdentify(key: String, value: NSObject) {
-        let identify = AMPIdentify.init().set(key, value: value)
-        if let identity = identify {
-            Amplitude.instance().identify(identity)
-        } else {
-            assertionFailure()
-        }
+        let identify = Identify().set(property: key, value: value)
+        amplitude?.identify(identify: identify)
         
         if printDebugAnalytics {
-            print("Analytics identified user \(key.uppercased()) to \(value)")
+            print("Amplitude identified property: \(key.uppercased()), value: \(value)")
         }
     }
     
     func amplitudeIncrement(key: String, value: NSObject) {
-        let identify = AMPIdentify.init().add(key, value: value)
-        if let identity = identify {
-            Amplitude.instance().identify(identity)
-        } else {
-            assertionFailure()
-        }
+        let identify = Identify().add(property: key, value: value as? Int ?? 0)
+        amplitude?.identify(identify: identify)
         
         if printDebugAnalytics {
-            print("Analytics identified user \(key.uppercased()) to \(value)")
+            print("Analytics incremented property: \(key.uppercased()), value: \(value)")
         }
     }
     
     func setUserProperties(_ userProperties: [String: Any]) {
-        let dictionary = userProperties.reduce(into: [NSString:Any]()) {
-            partialResult, result in
-            partialResult[NSString(string: result.key)] = result.value
-        }
-        Amplitude.instance().setUserProperties(dictionary)
+        amplitude?.identify(userProperties: userProperties)
     }
 }

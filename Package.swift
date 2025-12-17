@@ -18,11 +18,10 @@ let package = Package(
         .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "11.0.0"),
         .package(url: "https://github.com/facebook/facebook-ios-sdk", from: "17.3.0"),
         .package(url: "https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic", from: "6.0.0"),
-        .package(url: "https://github.com/amplitude/analytics-connector-ios.git", from: "1.0.0"),
-        .package(url: "https://github.com/amplitude/Amplitude-iOS", from: "8.17.0"),
         .package(url: "https://github.com/amplitude/experiment-ios-client", from: "1.13.5"),
         .package(url: "https://github.com/getsentry/sentry-cocoa.git", from: "8.35.0"),
         .package(url: "https://github.com/amplitude/AmplitudeSessionReplay-iOS", branch: "main"),
+        .package(url: "https://github.com/amplitude/Amplitude-Swift", from: "1.16.1"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -72,8 +71,8 @@ let package = Package(
         ),
         .target(name: "AnalyticsIntegration",
                 dependencies: [
-                    .product(name: "Amplitude", package: "Amplitude-iOS"),
-                    .product(name: "AmplitudeiOSSessionReplayMiddleware", package: "AmplitudeSessionReplay-iOS"),
+                    .product(name: "AmplitudeSwiftSessionReplayPlugin", package: "AmplitudeSessionReplay-iOS"),
+                    .product(name: "AmplitudeSwift", package: "Amplitude-Swift"),
                 ],
                 path: "Sources/AnalyticsIntegration",
                 linkerSettings: [
