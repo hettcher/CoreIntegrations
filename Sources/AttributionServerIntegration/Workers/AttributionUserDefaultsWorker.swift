@@ -11,6 +11,7 @@ class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
     fileprivate let generatedTokenKey = "ANALYTICS_GENERATED_TOKEN"
     fileprivate let installResult = "ANALYTICS_INSTALL_RESULT"
     fileprivate let uuidKey = "STORED_UUID_KEY"
+    fileprivate let fcmTokenKey = "ANALYTICS_FCM_TOKEN"
     
     var uuid: String {
         if let storedUUID = userDefaults.string(forKey: uuidKey) {
@@ -104,6 +105,15 @@ class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
     
     func deleteSavedPurchaseData() {
         userDefaults.removeObject(forKey: purchaseDataKey)
+        userDefaults.synchronize()
+    }
+    
+    func getFCMToken() -> String? {
+        return userDefaults.string(forKey: fcmTokenKey)
+    }
+    
+    func saveFCMToken(_ token: String) {
+        userDefaults.set(token, forKey: fcmTokenKey)
         userDefaults.synchronize()
     }
 }

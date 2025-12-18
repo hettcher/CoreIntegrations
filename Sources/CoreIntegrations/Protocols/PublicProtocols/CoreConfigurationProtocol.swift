@@ -16,6 +16,7 @@ public protocol CoreConfigurationProtocol {
     var configurationTimeout: Int { get }
     var attributionServerDataSource: any AttributionServerDataSource { get }
     var sentryConfigDataSource: (any SentryDataSourceProtocol)? { get }
+    var appLocalization: String { get }
 }
 
 public extension CoreConfigurationProtocol {
@@ -30,5 +31,9 @@ public extension CoreConfigurationProtocol {
     var appsflyerConfig: AppsflyerConfigData {
         return AppsflyerConfigData(appsFlyerDevKey: appSettings.appsFlyerKey,
                                    appleAppID: appSettings.appID)
+    }
+    
+    var appLocalization: String {
+        return Locale.current.identifier
     }
 }

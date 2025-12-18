@@ -24,6 +24,10 @@ public class CoreManager {
         return AttributionServerManager.shared.uniqueUserID
     }
     
+    public static var fcmToken: String? {
+        return FirebaseManager.shared.fcmToken
+    }
+    
     public static var sentry:PublicSentryManagerProtocol {
         return SentryManager.shared
     }
@@ -59,7 +63,7 @@ public class CoreManager {
     var remoteConfigManager: RemoteConfigManager?
     var analyticsManager: AnalyticsManager?
     var sentryManager: InternalSentryManagerProtocol = SentryManager.shared
-    var firebaseManager: FirebaseManager = FirebaseManager()
+    var firebaseManager: FirebaseManager = FirebaseManager.shared
 
     var delegate: CoreManagerDelegate?
         
@@ -151,6 +155,7 @@ public class CoreManager {
             
             let installPath = "/install-application"
             let purchasePath = "/subscribe"
+            let tokensPath = "/tokens"
             let installURLPath = configuration.attributionServerDataSource.installPath
             let purchaseURLPath = configuration.attributionServerDataSource.purchasePath
             
@@ -161,7 +166,8 @@ public class CoreManager {
                                                                  purchasePath: purchasePath,
                                                                  appsflyerID: appsflyerToken,
                                                                  appEnvironment: AppEnvironment.current.rawValue,
-                                                                 facebookData: facebookData)
+                                                                 facebookData: facebookData,
+                                                                 tokensPath: tokensPath)
             
             AttributionServerManager.shared.configure(config: attributionConfiguration)
         }
@@ -184,6 +190,10 @@ public class CoreManager {
         
         NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive),
                                                name: UIApplication.didBecomeActiveNotification,
+                                               object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleFCMTokenUpdate),
+                                               name: NSNotification.Name("FCMTokenUpdated"),
                                                object: nil)
         
         signForConfigurationFinish()
@@ -249,6 +259,7 @@ public class CoreManager {
             facebookManager?.userID = id
             firebaseManager.configure(id: id)
             sentryManager.setUserID(id)
+            sendFCMTokenIfAvailable(userId:id)
             self.analyticsManager?.setUserID(id)
             self.delegate?.coreInitialConfigurationFinished()
             remoteConfigManager?.configure(configuration?.remoteConfigDataSource.allConfigs ?? []) { [weak self] in
@@ -358,6 +369,7 @@ extension CoreManager {
     func handleAttributionInstall() {
         let installPath = "/install-application"
         let purchasePath = "/subscribe"
+        let tokensPath = "/tokens"
         
         let installURLPath = (InternalRemoteConfig.install_server_path.internalPayload?.first?.value as? String) ?? ""
         let purchaseURLPath = (InternalRemoteConfig.purchase_server_path.internalPayload?.first?.value as? String) ?? ""
@@ -365,7 +377,8 @@ extension CoreManager {
             let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
                                                                  installPath: installPath,
-                                                                 purchasePath: purchasePath)
+                                                                 purchasePath: purchasePath,
+                                                                 tokensPath: tokensPath)
             
             AttributionServerManager.shared.configureURLs(config: attributionConfiguration)
         } else {
@@ -376,7 +389,8 @@ extension CoreManager {
                 let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                      purchaseServerURLPath: purchaseURLPath,
                                                                      installPath: installPath,
-                                                                     purchasePath: purchasePath)
+                                                                     purchasePath: purchasePath,
+                                                                     tokensPath: tokensPath)
                 
                 AttributionServerManager.shared.configureURLs(config: attributionConfiguration)
             } else {
@@ -586,5 +600,26 @@ extension CoreManager {
         if isTrial {
             self.appsflyerManager?.logTrialPurchase()
         }
+    }
+    
+    @objc private func handleFCMTokenUpdate(_ notification: Notification) {
+        if let userInfo = notification.userInfo {
+            if let userId = userInfo["userId"] as? String {
+                sendFCMTokenIfAvailable(userId:userId)
+            }
+        }
+    }
+    
+    private func sendFCMTokenIfAvailable(userId: String) {
+        guard let fcmToken = FirebaseManager.shared.fcmToken,
+              let localization = configuration?.appLocalization else {
+            return
+        }
+        
+        AttributionServerManager.shared.checkAndSendSavedFCMToken(fcmToken: fcmToken, userId: userId, localization: localization) { result in
+            print("FCM token sent successfully - \(result)")
+        }
+        
+        self.delegate?.coreConfiguration(fcmTokenUpdated: fcmToken)
     }
 }

@@ -10,6 +10,7 @@ public protocol CoreManagerDelegate: AnyObject {
     
     func coreConfiguration(didReceive deepLinkResult: [AnyHashable : Any])
     func coreConfiguration(handleDeeplinkError error: Error)
+    func coreConfiguration(fcmTokenUpdated token: String)
 }
 
 public extension CoreManagerDelegate {

@@ -64,6 +64,7 @@ let package = Package(
         .target(name: "FirebaseIntegration",
                 dependencies: [
                     .product(name: "FirebaseAnalytics", package: "firebase-ios-sdk"),
+                    .product(name: "FirebaseMessaging", package: "firebase-ios-sdk"),
                 ],
                 path: "Sources/FirebaseIntegration",
                 linkerSettings: [
