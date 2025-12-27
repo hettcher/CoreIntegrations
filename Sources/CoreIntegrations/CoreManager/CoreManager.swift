@@ -59,7 +59,8 @@ public class CoreManager {
     var remoteConfigManager: RemoteConfigManager?
     var analyticsManager: AnalyticsManager?
     var sentryManager: InternalSentryManagerProtocol = SentryManager.shared
-    var firebaseManager: FirebaseManager = FirebaseManager()
+    
+    var firebaseManager = FirebaseConfigurationStateMachine()
 
     var delegate: CoreManagerDelegate?
         
@@ -113,6 +114,10 @@ public class CoreManager {
             }
             
             analyticsManager = AnalyticsManager.shared
+            
+            if configuration.hasCustomFirebaseConfiguration {
+                firebaseManager.handle(event: FirebaseConfigurationStateMachine.Event.waitForExternalConfiguration)
+            } 
             
             let amplitudeCustomURL = configuration.amplitudeDataSource.customServerURL
             analyticsManager?.configure(data: .init(appKey: configuration.appSettings.amplitudeSecret, cnConfig: AppEnvironment.isChina, customURL: amplitudeCustomURL, sessionReplayConfig: .init(startOnLaunch: configuration.amplitudeDataSource.sessionReplayStartOnLaunch, sampleRate: configuration.amplitudeDataSource.sessionReplaySampleRate, enableRemoteConfig: configuration.amplitudeDataSource.sessionReplayEnableRemoteConfig)))
@@ -270,7 +275,8 @@ public class CoreManager {
             appsflyerManager?.customerUserID = id
             purchaseManager?.setUserID(id)
             facebookManager?.userID = id
-            firebaseManager.configure(id: id)
+            firebaseManager.handle(event: FirebaseConfigurationStateMachine.Event.configureInternallyIfNeeded)
+            firebaseManager.handle(event: FirebaseConfigurationStateMachine.Event.handleIDSetup(id: id))
             sentryManager.setUserID(id)
             if configuration?.hasExternalAuthorization != true {
                 analyticsManager?.setUserID(id)
@@ -279,6 +285,10 @@ public class CoreManager {
                 InternalConfigurationEvent.remoteConfigLoaded.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
             }
         }
+    }
+    
+    func handleExternalFirebaseConfigurationFinished() {
+        firebaseManager.handle(event: FirebaseConfigurationStateMachine.Event.handleExternalConfigurationFinished)
     }
     
     func requestATT() {

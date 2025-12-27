@@ -186,6 +186,10 @@ extension CoreManager: CoreManagerProtocol {
         InternalConfigurationEvent.attConcentGiven.markAsCompleted()
     }
     
+    public func handleCustomFirebaseConfigured() {
+        handleExternalFirebaseConfigurationFinished()
+    }
+    
     public func handleNoInternetAlertWasShown() {
         handledNoInternetAlert = true
     }

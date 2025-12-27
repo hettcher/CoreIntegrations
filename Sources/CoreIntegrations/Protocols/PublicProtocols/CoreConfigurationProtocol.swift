@@ -14,6 +14,7 @@ public protocol CoreConfigurationProtocol {
     var useDefaultATTRequest: Bool { get }
     var isFacebookEnabled: Bool { get }
     var hasExternalAuthorization: Bool { get }
+    var hasCustomFirebaseConfiguration: Bool { get }
     var configurationTimeout: Int { get }
     var attributionServerDataSource: any AttributionServerDataSource { get }
     var sentryConfigDataSource: (any SentryDataSourceProtocol)? { get }

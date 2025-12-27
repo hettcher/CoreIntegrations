@@ -35,6 +35,7 @@ public protocol CoreManagerProtocol {
     
     func handleATTPermission(_ status: ATTrackingManager.AuthorizationStatus)
     func handleNoInternetAlertWasShown()
+    func handleCustomFirebaseConfigured()
     
     func setExternalAuthId(_ externalAuthId: String?)
 
