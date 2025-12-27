@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Andrii Plotnikov on 11.08.2024.
-//
-
 import Foundation
 
 public protocol RemoteTestingProcotol {
