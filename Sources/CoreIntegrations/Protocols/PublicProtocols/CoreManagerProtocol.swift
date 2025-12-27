@@ -10,6 +10,7 @@ import SentryIntegration
 import AttestationIntegration
 #endif
 import AppTrackingTransparency
+import StoreKit
 
 public protocol CoreManagerProtocol {
     static var shared: CoreManagerProtocol { get }
@@ -43,6 +44,8 @@ public protocol CoreManagerProtocol {
     
     func purchase(_ purchase: Purchase, promoOffer: PromoOffer, activeController: UIViewController?) async -> PurchasesPurchaseResult
         
+    func handleSuccessfulPurchase(product: Product, purchaseInfo: SKPurchaseInfo)
+    
     func verifyPremium() async -> PurchasesVerifyPremiumResult
     
     func verifyAll() async -> PurchaseVerifyAllResult
