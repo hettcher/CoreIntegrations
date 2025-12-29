@@ -62,6 +62,7 @@ public class AnalyticsManager {
     
     public func clearUserID() {
         Amplitude.instance().setUserId(nil, startNewSession: true)
+        Amplitude.instance().regenerateDeviceId()
     }
     
     internal func sendCohort() {
