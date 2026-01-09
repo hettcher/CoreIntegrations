@@ -16,19 +16,7 @@ public protocol ExtendedRemoteConfigurable: RemoteConfigurable {
 public extension ExtendedRemoteConfigurable {
     var value: String {
         get {
-            if stickyBucketed && stickyBuckettedValue == nil {
-                setStickyBuckettedValue(with: remoteValue)
-            } else if !stickyBucketed && stickyBuckettedValue != nil {
-                setStickyBuckettedValue(with: nil)
-            }
-            
-            let value = internalValue
-            
-            if lastExposedValue != value {
-                setLastExposedValue(newValue: value)
-                exposure()
-            }
-            
+            updateExposure()
             return internalValue
         }
     }
@@ -38,7 +26,23 @@ public extension ExtendedRemoteConfigurable {
     }
     
     var payload: [String : Any]? {
+        updateExposure()
         return internalPayload
+    }
+    
+    private func updateExposure() {
+        if stickyBucketed && stickyBuckettedValue == nil {
+            setStickyBuckettedValue(with: remoteValue)
+        } else if !stickyBucketed && stickyBuckettedValue != nil {
+            setStickyBuckettedValue(with: nil)
+        }
+        
+        let value = internalValue
+        
+        if lastExposedValue != value {
+            setLastExposedValue(newValue: value)
+            exposure()
+        }
     }
     
     func updatePayload(_ newValue: [String: Any]?) {
