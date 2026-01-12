@@ -108,8 +108,8 @@ public class CoreManager {
             if let sentryDataSource = configuration.sentryConfigDataSource {
                 let sentryConfig = SentryConfigData(dsn: sentryDataSource.dsn,
                                                     debug: sentryDataSource.debug,
+                                                    enableLogs: sentryDataSource.enableLogs,
                                                     tracesSampleRate: sentryDataSource.tracesSampleRate,
-                                                    profilesSampleRate: sentryDataSource.profilesSampleRate,
                                                     shouldCaptureHttpRequests: sentryDataSource.shouldCaptureHttpRequests,
                                                     httpCodesRange: sentryDataSource.httpCodesRange,
                                                     handledDomains: sentryDataSource.handledDomains)

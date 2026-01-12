@@ -13,6 +13,7 @@ public class SentryManager: InternalSentryManagerProtocol, PublicSentryManagerPr
             
             options.dsn = data.dsn
             options.debug = data.debug
+            options.enableLogs = data.enableLogs
             options.diagnosticLevel = SentryLevel(rawValue: data.diagnosticLevel) ?? .debug
             options.appHangTimeoutInterval = data.appHangTimeoutInterval
             options.enableAppHangTracking = data.enableAppHangTracking
@@ -58,7 +59,7 @@ public class SentryManager: InternalSentryManagerProtocol, PublicSentryManagerPr
             
             // Sample rate for profiling, applied on top of TracesSampleRate.
             // We recommend adjusting this value in production.
-            options.profilesSampleRate = NSNumber(value: data.profilesSampleRate)
+           // options.profilesSampleRate = NSNumber(value: data.profilesSampleRate)
             
             options.enableCaptureFailedRequests = data.shouldCaptureHttpRequests
             
