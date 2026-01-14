@@ -76,8 +76,13 @@ public class CoreManager {
         }
         
         func handleTestEnvironment(envVariables: [String: String]) -> CoreManagerResult{
-//            let xc_network = environmentVariables["xctest_network"] ?? "organic"
+            purchaseManager = PurchasesManager.shared
+            purchaseManager?.initialize(allIdentifiers: configuration.paywallDataSource.allPurchaseIDs, proIdentifiers: configuration.paywallDataSource.allProPurchaseIDs)
             
+            if let _ = environmentVariables["xctest_remote_config_enabled"] {
+                remoteConfigManager = CoreRemoteConfigManager(deploymentKey: configuration.appSettings.amplitudeDeploymentKey,
+                                                              userInfo: [InternalUserProperty.app_environment.key: AppEnvironment.current.rawValue])
+            }
             if let xc_screen_style_full = environmentVariables["xc_screen_style_full"] {
                 let screen_style_full = configuration.remoteConfigDataSource.allConfigs.first(where: {$0.key == "subscription_screen_style_full"})
                 screen_style_full?.updateValue(xc_screen_style_full)
@@ -95,8 +100,6 @@ public class CoreManager {
             
             let result = CoreManagerResult.finished
             
-            purchaseManager = PurchasesManager.shared
-            purchaseManager?.initialize(allIdentifiers: configuration.paywallDataSource.allPurchaseIDs, proIdentifiers: configuration.paywallDataSource.allProPurchaseIDs)
             return result
         }
         
@@ -173,8 +176,19 @@ public class CoreManager {
         
         let environmentVariables = ProcessInfo.processInfo.environment
         if verifyTestEnvironment(envVariables: environmentVariables) {
-            let result = handleTestEnvironment(envVariables: environmentVariables)
-            self.delegate?.coreConfigurationFinished(result: result)
+            if environmentVariables["xctest_remote_config_enabled"] != nil {
+                let result = handleTestEnvironment(envVariables: environmentVariables)
+                
+                remoteConfigManager?.updateRemoteConfig([:]) { [weak self] in
+                    self?.remoteConfigManager?.configure(self?.configuration?.remoteConfigDataSource.allConfigs ?? []) { [weak self] in
+                        guard let self = self else { return }
+                        self.delegate?.coreConfigurationFinished(result: result)
+                    }
+                }
+            } else {
+                let result = handleTestEnvironment(envVariables: environmentVariables)
+                self.delegate?.coreConfigurationFinished(result: result)
+            }
             return
         }
         

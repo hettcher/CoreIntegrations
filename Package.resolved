@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/amplitude/AmplitudeCore-Swift.git",
       "state" : {
-        "revision" : "ce504eddff3597f88b23af640200d59841dc4907",
-        "version" : "1.2.2"
+        "revision" : "f08b61731d4912721a4f88923b93a98862e790b6",
+        "version" : "1.3.1"
       }
     },
     {
@@ -33,7 +33,7 @@
       "location" : "https://github.com/amplitude/AmplitudeSessionReplay-iOS",
       "state" : {
         "branch" : "main",
-        "revision" : "b8f0510df2b5c4728785950fb1c429124044b3ee"
+        "revision" : "f1b4a83d6f6c7cdd1da48c314c80dd75efdfc5c5"
       }
     },
     {
@@ -192,10 +192,10 @@
     {
       "identity" : "sentry-cocoa",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/getsentry/sentry-cocoa",
+      "location" : "https://github.com/getsentry/sentry-cocoa.git",
       "state" : {
-        "revision" : "e2ac1723a4a9632e291c171b6e25a0c403b0fecb",
-        "version" : "8.35.0"
+        "revision" : "16cd512711375fa73f25ae5e373f596bdf4251ae",
+        "version" : "8.58.0"
       }
     },
     {
