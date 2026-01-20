@@ -27,9 +27,9 @@ extension PurchasesManager {
     public func checkVerified<T>(_ result: VerificationResult<T>) throws -> T {
         debugPrint("🏦 checkVerified ⚈ ⚈ ⚈ Checking verification... ⚈ ⚈ ⚈")
         switch result {
-        case .unverified:
+        case .unverified(let safe, let verificationError):
             debugPrint("🏦 checkVerified ❌ Not verified.")
-            throw StoreError.failedVerification
+            throw verificationError
         case .verified(let safe):
             debugPrint("🏦 checkVerified ✅ Verified.")
             return safe

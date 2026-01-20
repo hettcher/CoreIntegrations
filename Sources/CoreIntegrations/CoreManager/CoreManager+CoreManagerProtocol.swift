@@ -16,6 +16,11 @@ extension CoreManager: CoreManagerProtocol {
         self.analyticsManager?.stopSessionReplayRecord()
     }
     
+    public func listenForPendingPurchases(_ result: @escaping ((any Error)?) -> Void) {
+        guard let purchaseManager = purchaseManager else {return}
+        purchaseManager.listenForPendingPurchases(result)
+    }
+    
     @MainActor
     public func purchase(_ purchase: Purchase, activeController: UIViewController?) async throws -> PurchasesPurchaseResult {
         guard let purchaseManager = purchaseManager else {return .error("purchaseManager == nil")}
