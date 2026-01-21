@@ -36,7 +36,7 @@ public protocol CoreManagerProtocol {
     func handleATTPermission(_ status: ATTrackingManager.AuthorizationStatus)
     func handleNoInternetAlertWasShown()
     
-    func listenForPendingPurchases(_ result: @escaping ((Error?) -> Void))
+    func listenForPendingPurchases(_ result: @escaping (PurchasesIntegration.Transaction?, Error?) -> Void)
 
     func purchase(_ purchase: Purchase, activeController: UIViewController?) async throws -> PurchasesPurchaseResult
     

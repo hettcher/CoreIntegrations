@@ -3,7 +3,7 @@ import Foundation
 import StoreKit
 
 extension PurchasesManager {
-    public func listenForPendingPurchases(_ result: @escaping ((any Error)?) -> Void) {
+    public func listenForPendingPurchases(_ result: @escaping (Transaction?, (any Error)?) -> Void) {
         purchasePendingCallback = result
     }
     
@@ -19,10 +19,10 @@ extension PurchasesManager {
                     await self.updateProductStatus()
                     debugPrint("🏦 listenForTransactions ✅ Updated Customer Product Status.")
                     await transaction.finish()
-                    self.purchasePendingCallback?(nil)
+                    self.purchasePendingCallback?(transaction, nil)
                     debugPrint("🏦 listenForTransactions ✅ Finished Transaction.")
                 } catch {
-                    self.purchasePendingCallback?(error)
+                    self.purchasePendingCallback?(nil, error)
                     debugPrint("🏦 listenForTransactions ❌ Transaction verification failed.")
                 }
             }

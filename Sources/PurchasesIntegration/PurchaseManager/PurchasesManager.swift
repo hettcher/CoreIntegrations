@@ -31,7 +31,7 @@ public class PurchasesManager: NSObject, PurchasesManagerProtocol {
     var allIdentifiers: [String] = []
     var proIdentifiers: [String] = []
     
-    var purchasePendingCallback: ((Error?) -> Void)?
+    var purchasePendingCallback: ((Transaction?, Error?) -> Void)?
     
     // MARK: Lifecycle
     public func initialize(allIdentifiers: [String], proIdentifiers: [String]) {

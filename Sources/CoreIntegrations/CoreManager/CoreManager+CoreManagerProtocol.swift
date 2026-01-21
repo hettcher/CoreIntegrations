@@ -16,7 +16,7 @@ extension CoreManager: CoreManagerProtocol {
         self.analyticsManager?.stopSessionReplayRecord()
     }
     
-    public func listenForPendingPurchases(_ result: @escaping ((any Error)?) -> Void) {
+    public func listenForPendingPurchases(_ result: @escaping (PurchasesIntegration.Transaction?, (any Error)?) -> Void) {
         guard let purchaseManager = purchaseManager else {return}
         purchaseManager.listenForPendingPurchases(result)
     }
