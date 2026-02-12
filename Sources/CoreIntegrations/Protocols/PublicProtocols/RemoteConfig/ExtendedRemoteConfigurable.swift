@@ -69,6 +69,9 @@ extension ExtendedRemoteConfigurable {
     internal var internalValue: String {
         get {
             if let _ = ProcessInfo.processInfo.environment["xctest_skip_config"] {
+                if let _ = ProcessInfo.processInfo.environment["xctest_remote_config_enabled"] {
+                    return manualReassignedValue ?? stickyBuckettedValue ?? remoteValue
+                }
                 return manualReassignedValue ?? defaultValue
             }
             
