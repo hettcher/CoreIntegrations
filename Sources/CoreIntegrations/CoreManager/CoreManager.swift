@@ -174,12 +174,14 @@ public class CoreManager {
         }
         isConfigured = true
         
+        self.configuration = configuration
+        
         let environmentVariables = ProcessInfo.processInfo.environment
         if verifyTestEnvironment(envVariables: environmentVariables) {
             if environmentVariables["xctest_remote_config_enabled"] != nil {
                 let result = handleTestEnvironment(envVariables: environmentVariables)
                 
-                remoteConfigManager?.configure(self.configuration?.remoteConfigDataSource.allConfigs ?? []) { [weak self] in
+                remoteConfigManager?.configure(configuration.remoteConfigDataSource.allConfigs) { [weak self] in
                     InternalConfigurationEvent.remoteConfigLoaded.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
                     self?.delegate?.coreConfigurationFinished(result: result)
                 }
@@ -189,8 +191,6 @@ public class CoreManager {
             }
             return
         }
-        
-        self.configuration = configuration
         
         configureServices(configuration: configuration)
         
