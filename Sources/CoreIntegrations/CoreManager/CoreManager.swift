@@ -182,7 +182,6 @@ public class CoreManager {
                 let result = handleTestEnvironment(envVariables: environmentVariables)
                 
                 remoteConfigManager?.configure(configuration.remoteConfigDataSource.allConfigs) { [weak self] in
-                    InternalConfigurationEvent.remoteConfigLoaded.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
                     self?.delegate?.coreConfigurationFinished(result: result)
                 }
             } else {
