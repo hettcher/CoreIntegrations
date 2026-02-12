@@ -80,6 +80,11 @@ public class CoreManager {
             purchaseManager?.initialize(allIdentifiers: configuration.paywallDataSource.allPurchaseIDs, proIdentifiers: configuration.paywallDataSource.allProPurchaseIDs)
             
             if let _ = environmentVariables["xctest_remote_config_enabled"] {
+                analyticsManager = AnalyticsManager.shared
+                
+                let amplitudeCustomURL = configuration.amplitudeDataSource.customServerURL
+                analyticsManager?.configure(data: .init(appKey: configuration.appSettings.amplitudeSecret, cnConfig: AppEnvironment.isChina, customURL: amplitudeCustomURL, sessionReplayConfig: .init(startOnLaunch: configuration.amplitudeDataSource.sessionReplayStartOnLaunch, sampleRate: configuration.amplitudeDataSource.sessionReplaySampleRate, enableRemoteConfig: configuration.amplitudeDataSource.sessionReplayEnableRemoteConfig)))
+                
                 remoteConfigManager = CoreRemoteConfigManager(deploymentKey: configuration.appSettings.amplitudeDeploymentKey,
                                                               userInfo: [InternalUserProperty.app_environment.key: AppEnvironment.current.rawValue])
             }
