@@ -61,7 +61,6 @@ public extension CorePaywallConfiguration {
             )
         }
     }
-    
 }
 
 extension CorePaywallConfiguration {

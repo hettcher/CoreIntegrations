@@ -22,5 +22,6 @@ public protocol RemoteConfigManager {
     func updateRemoteConfig(_ appConfigurables: [String: String], completion: @escaping () -> Void)
     
     func getValue(forConfig config: any RemoteConfigurable) -> String?
+    func getPayload(forConfig config: any RemoteConfigurable) -> [String: Any]?
     func exposure(forConfig config: RemoteConfigurable)
 }
