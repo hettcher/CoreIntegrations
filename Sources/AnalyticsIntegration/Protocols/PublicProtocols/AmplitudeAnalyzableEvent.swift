@@ -14,7 +14,7 @@ public extension AmplitudeAnalyzableEvent {
         AnalyticsManager.shared.amplitudeLog(event: key, with: ["answer": parameter])
     }
     
-    func log(parameters: [AnyHashable: Any]) {
+    func log(parameters: [String: Any]) {
         AnalyticsManager.shared.amplitudeLog(event: key, with: parameters)
     }
 }

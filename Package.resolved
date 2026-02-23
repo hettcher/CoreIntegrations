@@ -19,6 +19,15 @@
       }
     },
     {
+      "identity" : "amplitude-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/amplitude/Amplitude-Swift.git",
+      "state" : {
+        "revision" : "787600b333c347205e448c2e2cbe91d04cdcde28",
+        "version" : "1.16.1"
+      }
+    },
+    {
       "identity" : "amplitudecore-swift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/amplitude/AmplitudeCore-Swift.git",
@@ -77,8 +86,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/amplitude/experiment-ios-client",
       "state" : {
-        "revision" : "f74d9f9a470d46bc0ee80060674652f07d91cd8d",
-        "version" : "1.16.1"
+        "revision" : "d9c02e9758e27394fd825506eaff1ad397876741",
+        "version" : "1.19.0"
       }
     },
     {
