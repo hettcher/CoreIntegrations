@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Anatolii Kanarskyi on 22/8/24.
-//
-
 import Foundation
 
 public protocol SentryDataSourceProtocol: AnyObject {

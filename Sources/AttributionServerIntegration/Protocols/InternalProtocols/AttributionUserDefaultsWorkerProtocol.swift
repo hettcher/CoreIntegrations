@@ -1,4 +1,3 @@
-
 import Foundation
 
 internal protocol AttributionUserDefaultsWorkerProtocol {
@@ -23,4 +22,8 @@ internal protocol AttributionUserDefaultsWorkerProtocol {
     
     func getFCMToken() -> String?
     func saveFCMToken(_ token: String)
+
+    func getExternalAuthData() -> String?
+    func saveExternalAuthData(_ externalAuthId: String)
+    func deleteSavedExternalAuthData()
 }

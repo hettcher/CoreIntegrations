@@ -12,4 +12,7 @@ extension AttributionServerDataSource {
     var purchasePath: String {
         return AttributionEndpoints.purchase_server_path.rawValue
     }
+    var externalAuthPath: String {
+        return AttributionEndpoints.external_auth_path.rawValue
+    }
 }

@@ -1,4 +1,3 @@
-
 import Foundation
 
 public class AttributionServerWorker {
@@ -7,13 +6,15 @@ public class AttributionServerWorker {
     let installPath: String
     let purchasePath: String
     let tokensPath: String
-    
-    init(installServerURLPath: String, purchaseServerURLPath: String, installPath: String, purchasePath: String, tokensPath: String) {
+    let externalAuthPath: String
+
+    init(installServerURLPath: String, purchaseServerURLPath: String, installPath: String, purchasePath: String, externalAuthPath: String, tokensPath: String) {
         self.installServerURLPath = installServerURLPath
         self.purchaseServerURLPath = purchaseServerURLPath
         self.installPath = installPath
         self.purchasePath = purchasePath
         self.tokensPath = tokensPath
+        self.externalAuthPath = externalAuthPath
     }
     
     fileprivate var isSyncingInstall = false
@@ -32,6 +33,13 @@ public class AttributionServerWorker {
     
     fileprivate var tokensURL: URL? {
         let urlPath = "\(installServerURLPath)\(tokensPath)"
+        let urlOrNil = URL(string: urlPath)
+        return urlOrNil
+    }
+    
+    fileprivate var externalAuthURL: URL? {
+        let trimInstallServerURLPath = installServerURLPath.replacingOccurrences(of: "/attribute", with: "")
+        let urlPath = "\(trimInstallServerURLPath)\(externalAuthPath)"
         let urlOrNil = URL(string: urlPath)
         return urlOrNil
     }
@@ -105,7 +113,7 @@ extension AttributionServerWorker: AttributionServerWorkerProtocol {
             defer {
                 self.isSyncingInstall = false
             }
-            if let error = error {
+            if let _ = error {
                 self.handleServerError()
                 
                 if taskSession.configuration.waitsForConnectivity == false {
@@ -153,7 +161,7 @@ extension AttributionServerWorker: AttributionServerWorkerProtocol {
         }
         
         let task = taskSession.dataTask(with: request) { (data, response, error) in
-            if let error = error {
+            if let _ = error {
                 self.handleServerError()
                 
                 if taskSession.configuration.waitsForConnectivity == false {
@@ -165,7 +173,37 @@ extension AttributionServerWorker: AttributionServerWorkerProtocol {
                 return
             }
             
-            guard let responseData = data else{
+            guard let _ = data else{
+                completion(false)
+                return
+            }
+            
+            completion(true)
+        }
+        task.resume()
+    }
+    
+    func sendExternalAuthorization(parameters: AttributionExternalAuthRequestModel,
+                                   authToken: String,
+                                   completion: @escaping ((Bool) -> Void)) {
+        let jsonDataOrNil = try? JSONEncoder().encode(parameters)
+        
+        guard let url = externalAuthURL, let jsonData = jsonDataOrNil else {
+            print("\n\n\nEXTERNAL AUTH SEND ERROR\n\n\n")
+            completion(false)
+            return
+        }
+        
+        let request = createRequest(url: url, body: jsonData, authToken: authToken)
+        
+        let task = session.dataTask(with: request) { (data, response, error) in
+            if let _ = error {
+                self.handleServerError()
+                completion(false)
+                return
+            }
+            
+            guard let _ = data else{
                 completion(false)
                 return
             }

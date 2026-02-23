@@ -24,8 +24,8 @@ public class CoreManager {
         return AttributionServerManager.shared.uniqueUserID
     }
     
-    public static var fcmToken: String? {
-        return FirebaseManager.shared.fcmToken
+    public var fcmToken: String? {
+        return firebaseManager.fcmToken
     }
     
     public static var sentry:PublicSentryManagerProtocol {
@@ -63,7 +63,8 @@ public class CoreManager {
     var remoteConfigManager: RemoteConfigManager?
     var analyticsManager: AnalyticsManager?
     var sentryManager: InternalSentryManagerProtocol = SentryManager.shared
-    var firebaseManager: FirebaseManager = FirebaseManager.shared
+    
+    var firebaseManager = FirebaseConfigurationStateMachine()
 
     var delegate: CoreManagerDelegate?
         
@@ -126,6 +127,10 @@ public class CoreManager {
             
             analyticsManager = AnalyticsManager.shared
             
+            if configuration.hasCustomFirebaseConfiguration {
+                firebaseManager.handle(event: FirebaseConfigurationStateMachine.Event.waitForExternalConfiguration)
+            } 
+            
             let amplitudeCustomURL = configuration.amplitudeDataSource.customServerURL
             analyticsManager?.configure(data: .init(appKey: configuration.appSettings.amplitudeSecret, cnConfig: AppEnvironment.isChina, customURL: amplitudeCustomURL, sessionReplayConfig: .init(startOnLaunch: configuration.amplitudeDataSource.sessionReplayStartOnLaunch, sampleRate: configuration.amplitudeDataSource.sessionReplaySampleRate, enableRemoteConfig: configuration.amplitudeDataSource.sessionReplayEnableRemoteConfig)))
             
@@ -164,18 +169,23 @@ public class CoreManager {
             let installPath = "/install-application"
             let purchasePath = "/subscribe"
             let tokensPath = "/tokens"
+            let externalAuthPath = "/external-authorization"
             let installURLPath = configuration.attributionServerDataSource.installPath
             let purchaseURLPath = configuration.attributionServerDataSource.purchasePath
-            
+            let externalAuthURLPath = configuration.attributionServerDataSource.externalAuthPath
+
             let attributionConfiguration = AttributionConfigData(authToken: attributionToken,
                                                                  installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
+                                                                 externalAuthServerURLPath: externalAuthURLPath,
                                                                  installPath: installPath,
                                                                  purchasePath: purchasePath,
+                                                                 externalAuthPath: externalAuthPath,
                                                                  appsflyerID: appsflyerToken,
                                                                  appEnvironment: AppEnvironment.current.rawValue,
                                                                  facebookData: facebookData,
-                                                                 tokensPath: tokensPath)
+                                                                 tokensPath: tokensPath,
+                                                                 hasExternalAuth: configuration.hasExternalAuthorization)
             
             AttributionServerManager.shared.configure(config: attributionConfiguration)
         }
@@ -232,6 +242,24 @@ public class CoreManager {
         }
     }
     
+    func internalHanleAuthID(_ authID: String?) {
+        guard configuration?.hasExternalAuthorization != false else {
+            assertionFailure()
+            return
+        }
+        
+        if let authID, authID != "" {
+            analyticsManager?.setUserID(authID)
+        } else {
+            analyticsManager?.clearUserID()
+        }
+        
+        guard let authID else {
+            return
+        }
+        AttributionServerManager.shared.sendExternalAuthorization(externalAuthID: authID)
+    }
+    
     @objc public func applicationDidBecomeActive() {
         configureID()
         
@@ -273,10 +301,13 @@ public class CoreManager {
             appsflyerManager?.customerUserID = id
             purchaseManager?.setUserID(id)
             facebookManager?.userID = id
-            firebaseManager.configure(id: id)
+            firebaseManager.handle(event: FirebaseConfigurationStateMachine.Event.configureInternallyIfNeeded)
+            firebaseManager.handle(event: FirebaseConfigurationStateMachine.Event.handleIDSetup(id: id))
             sentryManager.setUserID(id)
             sendFCMTokenIfAvailable(userId:id)
-            self.analyticsManager?.setUserID(id)
+            if configuration?.hasExternalAuthorization != true {
+                analyticsManager?.setUserID(id)
+            }
             self.delegate?.coreInitialConfigurationFinished()
             remoteConfigManager?.configure(configuration?.remoteConfigDataSource.allConfigs ?? []) { [weak self] in
                 InternalConfigurationEvent.remoteConfigLoaded.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
@@ -284,6 +315,10 @@ public class CoreManager {
             }
             
         }
+    }
+    
+    func handleExternalFirebaseConfigurationFinished() {
+        firebaseManager.handle(event: FirebaseConfigurationStateMachine.Event.handleExternalConfigurationFinished)
     }
     
     func requestATT() {
@@ -386,14 +421,19 @@ extension CoreManager {
         let installPath = "/install-application"
         let purchasePath = "/subscribe"
         let tokensPath = "/tokens"
-        
+        let externalAuthPath = "/external-authorization"
+
         let installURLPath = (InternalRemoteConfig.install_server_path.internalPayload?.first?.value as? String) ?? ""
         let purchaseURLPath = (InternalRemoteConfig.purchase_server_path.internalPayload?.first?.value as? String) ?? ""
+        let externalAuthURLPath = InternalRemoteConfig.external_auth_server_path.internalValue
+
         if installURLPath != "" && purchaseURLPath != "" {
             let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
+                                                                 externalAuthServerURLPath: externalAuthURLPath,
                                                                  installPath: installPath,
                                                                  purchasePath: purchasePath,
+                                                                 externalAuthPath: externalAuthPath,
                                                                  tokensPath: tokensPath)
             
             AttributionServerManager.shared.configureURLs(config: attributionConfiguration)
@@ -404,8 +444,10 @@ extension CoreManager {
                 
                 let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                      purchaseServerURLPath: purchaseURLPath,
+                                                                     externalAuthServerURLPath: externalAuthURLPath,
                                                                      installPath: installPath,
                                                                      purchasePath: purchasePath,
+                                                                     externalAuthPath: externalAuthPath,
                                                                      tokensPath: tokensPath)
                 
                 AttributionServerManager.shared.configureURLs(config: attributionConfiguration)
@@ -627,7 +669,7 @@ extension CoreManager {
     }
     
     private func sendFCMTokenIfAvailable(userId: String) {
-        guard let fcmToken = FirebaseManager.shared.fcmToken,
+        guard let fcmToken = firebaseManager.fcmToken,
               let localization = configuration?.appLocalization else {
             return
         }

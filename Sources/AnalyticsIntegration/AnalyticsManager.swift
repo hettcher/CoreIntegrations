@@ -56,7 +56,13 @@ public class AnalyticsManager {
         guard userID != Amplitude.instance().userId else {
             return
         }
+        
         Amplitude.instance().setUserId(userID, startNewSession: false)
+    }
+    
+    public func clearUserID() {
+        Amplitude.instance().setUserId(nil, startNewSession: true)
+        Amplitude.instance().regenerateDeviceId()
     }
     
     internal func sendCohort() {

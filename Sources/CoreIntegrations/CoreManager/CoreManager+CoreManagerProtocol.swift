@@ -2,6 +2,7 @@
 import Foundation
 import UIKit
 import AppTrackingTransparency
+import StoreKit
 #if !COCOAPODS
 import PurchasesIntegration
 #endif
@@ -73,6 +74,13 @@ extension CoreManager: CoreManagerProtocol {
         case .unknown:
             return .unknown
         }
+    }
+    
+    public func handleSuccessfulPurchase(product: Product, purchaseInfo: SKPurchaseInfo) {
+        let details = PurchaseDetails(productId: product.id, product: product, transaction: purchaseInfo.transaction, jws: purchaseInfo.jwsRepresentation, originalTransactionID: purchaseInfo.originalID, decodedTransaction: purchaseInfo.jsonRepresentation)
+        self.sendPurchaseToAttributionServer(details)
+        self.sendPurchaseToFacebook(details)
+        self.sendPurchaseToAppsflyer(details)
     }
     
     private func groupFor(_ productId: String) -> any CorePurchaseGroup {
@@ -188,7 +196,15 @@ extension CoreManager: CoreManagerProtocol {
         InternalConfigurationEvent.attConcentGiven.markAsCompleted()
     }
     
+    public func handleCustomFirebaseConfigured() {
+        handleExternalFirebaseConfigurationFinished()
+    }
+    
     public func handleNoInternetAlertWasShown() {
         handledNoInternetAlert = true
+    }
+    
+    public func setExternalAuthId(_ externalAuthId: String?) {
+        self.internalHanleAuthID(externalAuthId)
     }
 }

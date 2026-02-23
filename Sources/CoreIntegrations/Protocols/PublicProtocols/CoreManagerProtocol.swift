@@ -10,14 +10,15 @@ import SentryIntegration
 import AttestationIntegration
 #endif
 import AppTrackingTransparency
+import StoreKit
 
 public protocol CoreManagerProtocol {
     static var shared: CoreManagerProtocol { get }
         
     static var uniqueUserID: String? { get }
-    static var fcmToken: String? { get }
     static var sentry:PublicSentryManagerProtocol { get }
     
+    var fcmToken: String? { get }
     var userInfo: UserInfo? { get }
 
     func application(_ application: UIApplication,
@@ -36,6 +37,10 @@ public protocol CoreManagerProtocol {
     
     func handleATTPermission(_ status: ATTrackingManager.AuthorizationStatus)
     func handleNoInternetAlertWasShown()
+
+    func handleCustomFirebaseConfigured()
+    
+    func setExternalAuthId(_ externalAuthId: String?)
     
     func listenForPendingPurchases(_ result: @escaping (PurchasesIntegration.Transaction?, Error?) -> Void)
 
@@ -43,6 +48,8 @@ public protocol CoreManagerProtocol {
     
     func purchase(_ purchase: Purchase, promoOffer: PromoOffer, activeController: UIViewController?) async throws -> PurchasesPurchaseResult
         
+    func handleSuccessfulPurchase(product: Product, purchaseInfo: SKPurchaseInfo)
+    
     func verifyPremium() async -> PurchasesVerifyPremiumResult
     
     func verifyAll() async -> PurchaseVerifyAllResult
