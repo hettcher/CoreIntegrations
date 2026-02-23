@@ -33,7 +33,7 @@
       "location" : "https://github.com/amplitude/AmplitudeSessionReplay-iOS",
       "state" : {
         "branch" : "main",
-        "revision" : "f1b4a83d6f6c7cdd1da48c314c80dd75efdfc5c5"
+        "revision" : "f78557d86b9eefb86c75a0cf3035ee8eafc62db8"
       }
     },
     {
@@ -41,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/amplitude/analytics-connector-ios.git",
       "state" : {
-        "revision" : "e2ca17ac735bcbc48b13062484541702ef45153d",
-        "version" : "1.0.3"
+        "revision" : "4adbfe85486e6dcdcdca5fa9362097ffe5ec712b",
+        "version" : "1.3.1"
       }
     },
     {
@@ -194,8 +194,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/getsentry/sentry-cocoa.git",
       "state" : {
-        "revision" : "16cd512711375fa73f25ae5e373f596bdf4251ae",
-        "version" : "8.58.0"
+        "revision" : "0041fe6374a0557747d3c7f19888510a30684dfa",
+        "version" : "9.1.0"
       }
     },
     {

@@ -15,6 +15,7 @@ public protocol CoreManagerProtocol {
     static var shared: CoreManagerProtocol { get }
         
     static var uniqueUserID: String? { get }
+    static var fcmToken: String? { get }
     static var sentry:PublicSentryManagerProtocol { get }
     
     var userInfo: UserInfo? { get }

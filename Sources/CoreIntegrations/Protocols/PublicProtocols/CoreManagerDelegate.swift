@@ -2,11 +2,15 @@
 import Foundation
 
 public protocol CoreManagerDelegate: AnyObject {
+    func coreInitialConfigurationFinished()
+    func coreInitialRemoteConfigurationFinished()
+    
     func coreConfigurationFinished(result: CoreManagerResult)
     func coreConfigurationUpdated()
     
     func coreConfiguration(didReceive deepLinkResult: [AnyHashable : Any])
     func coreConfiguration(handleDeeplinkError error: Error)
+    func coreConfiguration(fcmTokenUpdated token: String)
 }
 
 public extension CoreManagerDelegate {
