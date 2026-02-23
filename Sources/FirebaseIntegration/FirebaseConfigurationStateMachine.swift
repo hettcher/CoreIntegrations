@@ -1,8 +1,9 @@
 
 import FirebaseAnalytics
 import FirebaseCore
+import FirebaseMessaging
 
-public class FirebaseConfigurationStateMachine {
+public class FirebaseConfigurationStateMachine: NSObject {
     enum State {
         case notSet
         case waitingForExternalConfiguration(id: String?)
@@ -21,8 +22,15 @@ public class FirebaseConfigurationStateMachine {
     private(set) var state: State = .notSet
     private var savedID: String?
     
-    public init() {
-        
+    private var _fcmToken: String?
+    private var _userId: String = ""
+    
+    public var fcmToken: String? {
+        return _fcmToken
+    }
+    
+    override public init() {
+        super.init()
     }
         
     public func handle(event: Event) {
@@ -78,9 +86,30 @@ public class FirebaseConfigurationStateMachine {
     private func configureFirebase() {
         FirebaseApp.configure()
         Analytics.logEvent("Firebase Init", parameters: nil)
+        
+        // Set messaging delegate to receive FCM token
+        Messaging.messaging().delegate = self
     }
     
     private func sendAnalyticsID(_ id: String) {
         Analytics.setUserID(id)
+    }
+    
+    public func registerForRemoteNotifications(deviceToken: Data) {
+        Messaging.messaging().apnsToken = deviceToken
+    }
+}
+
+extension FirebaseConfigurationStateMachine: MessagingDelegate {
+    public func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+        guard let token = fcmToken else { return }
+        _fcmToken = token
+        
+        // Notify that FCM token is available
+        NotificationCenter.default.post(
+            name: NSNotification.Name("FCMTokenUpdated"),
+            object: nil,
+            userInfo: ["token": token, "userId":_userId]
+        )
     }
 }
