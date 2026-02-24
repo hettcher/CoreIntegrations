@@ -8,7 +8,7 @@ public protocol CoreAnalyzableUserProperty: CaseIterable, AmplitudeAnalyzableUse
     
 }
 
-extension CoreAnalyzableUserProperty {
+public extension CoreAnalyzableUserProperty {
     static func identify(_ userProperties: [String: Any], fetchFlags: Bool, numberOfTimes: Int = 1, completion: (() -> Void)?) {
         identify(userProperties)
         
