@@ -38,8 +38,8 @@ public class CoreRemoteConfigManager: RemoteConfigManager {
         }
     }
     
-    public func updateRemoteConfig(_ userProperies: [String: Any], completion: @escaping () -> Void) {
-        remoteConfigManager.updateRemoteConfig(userProperies, completion: completion)
+    public func updateRemoteConfig(_ userProperies: [String: Any], flagKeys: [String], completion: @escaping () -> Void) {
+        remoteConfigManager.updateRemoteConfig(userProperies, flagKeys: flagKeys, completion: completion)
     }
     
     public func getValue(forConfig config: RemoteConfigurable) -> String? {
