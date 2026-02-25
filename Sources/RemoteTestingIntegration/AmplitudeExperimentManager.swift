@@ -42,7 +42,9 @@ public class AmplitudeExperimentManager {
             user = builder.build()
         }
         
-        client.fetch(user: user) { client, error in
+        let options = FetchOptions(flagKeys)
+        
+        client.fetch(user: user, options: options) { client, error in
             defer {
                 self.fetchCompletion?()
                 self.fetchCompletion = nil
