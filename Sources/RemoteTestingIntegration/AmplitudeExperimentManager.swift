@@ -93,7 +93,7 @@ extension AmplitudeExperimentManager: RemoteConfigManager {
         client.exposure(key: config.key)
     }
     
-    public func updateRemoteConfig(_ userProperies: [String: String], completion: @escaping () -> Void) {
+    public func updateRemoteConfig(_ userProperies: [String: Any], completion: @escaping () -> Void) {
         self.fetch(userProperties: userProperies) {
             completion()
         }
