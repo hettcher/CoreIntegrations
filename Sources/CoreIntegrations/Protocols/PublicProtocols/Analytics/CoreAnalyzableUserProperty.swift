@@ -9,20 +9,9 @@ public protocol CoreAnalyzableUserProperty: CaseIterable, AmplitudeAnalyzableUse
 }
 
 public extension CoreAnalyzableUserProperty {
-    static func fetchFlags(numberOfTimes: Int = 1, userProperties: [String: Any] = [:],
-                           flagKeys: [String] = [], completion: (() -> Void)?) {
-//        let group = DispatchGroup()
-//        
-//        for _ in 0..<numberOfTimes {
-//            group.enter()
-            CoreManager.internalShared.remoteConfigManager?.updateRemoteConfig(userProperties, flagKeys: flagKeys) {
-                completion?()
-//                group.leave()
-            }
-//        }
-//        
-//        group.notify(queue: .global()) {
-//            completion?()
-//        }
+    static func fetchFlags(userProperties: [String: Any] = [:], completion: (() -> Void)?) {
+        CoreManager.internalShared.remoteConfigManager?.updateRemoteConfig(userProperties) {
+            completion?()
+        }
     }
 }

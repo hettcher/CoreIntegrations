@@ -235,7 +235,7 @@ public class CoreManager {
         signForAttributionFinish()
         signForConfigurationFinish()
         
-        remoteConfigManager?.updateRemoteConfig([:], flagKeys: []) { [ weak self] in
+        remoteConfigManager?.updateRemoteConfig([:]) { [ weak self] in
             self?.remoteConfigManager?.configure(self?.configuration?.remoteConfigDataSource.allConfigs ?? []) { [weak self] in
                 InternalConfigurationEvent.remoteConfigLoaded.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
             }
@@ -505,7 +505,7 @@ extension CoreManager {
             if result.network == .organic {
                 sendUserAttribution(userAttribution: [:], status: configurationManager.statusForAnalytics)
                 
-                remoteConfigManager?.updateRemoteConfig([:], flagKeys: []) { [weak self] in
+                remoteConfigManager?.updateRemoteConfig([:]) { [weak self] in
                     InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
                 }
             } else {
@@ -515,7 +515,7 @@ extension CoreManager {
                     sendUserAttribution(userAttribution: attributionDict, status: configurationManager.statusForAnalytics)
                 }
                 
-                remoteConfigManager?.updateRemoteConfig(attributionDict, flagKeys: []) { [weak self] in
+                remoteConfigManager?.updateRemoteConfig(attributionDict) { [weak self] in
                     InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
                     if isUpdated {
                         self?.delegate?.coreConfigurationUpdated()

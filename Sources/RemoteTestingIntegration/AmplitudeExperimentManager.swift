@@ -28,11 +28,11 @@ public class AmplitudeExperimentManager {
         )
         
         DispatchQueue.global().async {
-            self.fetch(userProperties: userInfo, flagKeys: [], completion: nil)
+            self.fetch(userProperties: userInfo, completion: nil)
         }
     }
     
-    func fetch(userProperties: [String: Any]?, flagKeys: [String], completion: (() -> Void)?) {
+    func fetch(userProperties: [String: Any]?, completion: (() -> Void)?) {
         var user: ExperimentUser? = nil
         
         if let userProperties {
@@ -41,10 +41,8 @@ public class AmplitudeExperimentManager {
 
             user = builder.build()
         }
-        
-        let options = FetchOptions(flagKeys)
-        
-        client.fetch(user: user, options: options) { client, error in
+                
+        client.fetch(user: user, options: nil) { client, error in
             defer {
                 self.fetchCompletion?()
                 self.fetchCompletion = nil
@@ -98,8 +96,8 @@ extension AmplitudeExperimentManager: RemoteConfigManager {
         client.exposure(key: config.key)
     }
     
-    public func updateRemoteConfig(_ userProperies: [String: Any], flagKeys: [String], completion: @escaping () -> Void) {
-        self.fetch(userProperties: userProperies, flagKeys: flagKeys) {
+    public func updateRemoteConfig(_ userProperies: [String: Any], completion: @escaping () -> Void) {
+        self.fetch(userProperties: userProperies) {
             completion()
         }
     }
