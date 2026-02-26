@@ -1,3 +1,3 @@
 # CoreIntegrations
 
-Framework version - 2.10.3amplfinalconfigcallback
+Framework version - 2.11.0amplfinalconfigcallback
