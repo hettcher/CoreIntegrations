@@ -22,9 +22,9 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
         let uuid = UIDevice.current.identifierForVendor?.uuidString ?? ""
         return uuid
     }
-    
+
     var sdkVersion: String {
-        return "2.10.6amplfinal+payload"
+        return "2.11.0amplfinal+payload"
     }
     
     var osVersion: String {

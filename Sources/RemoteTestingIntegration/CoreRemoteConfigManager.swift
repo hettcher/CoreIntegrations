@@ -38,7 +38,7 @@ public class CoreRemoteConfigManager: RemoteConfigManager {
         }
     }
     
-    public func updateRemoteConfig(_ userProperies: [String: String], completion: @escaping () -> Void) {
+    public func updateRemoteConfig(_ userProperies: [String: Any], completion: @escaping () -> Void) {
         remoteConfigManager.updateRemoteConfig(userProperies, completion: completion)
     }
     
