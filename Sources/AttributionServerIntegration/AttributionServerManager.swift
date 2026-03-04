@@ -290,7 +290,7 @@ open class AttributionServerManager {
     }
     
     fileprivate func sendFCMToken(userId: String, fcmToken: String, localization: String, completion: @escaping (Bool) -> Void) {
-        let parameters = AttributionTokenRequestModel(userId: userId, fcmToken: fcmToken, localization: localization)
+        let parameters = AttributionTokenRequestModel(userId: userId, fcmToken: fcmToken, localization: localization, environment: appEnvironment)
         
         serverWorker?.sendFCMToken(parameters: parameters,
                                    authToken: authorizationToken,

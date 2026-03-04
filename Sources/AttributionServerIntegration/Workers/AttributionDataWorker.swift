@@ -24,7 +24,7 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
     }
     
     var sdkVersion: String {
-        return "2.10.2amplfinal_fcm"
+        return "2.10.3amplfinal_fcm"
     }
     
     var osVersion: String {
