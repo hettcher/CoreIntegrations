@@ -21,7 +21,7 @@ let package = Package(
         .package(url: "https://github.com/amplitude/analytics-connector-ios.git", from: "1.0.0"),
         .package(url: "https://github.com/amplitude/Amplitude-iOS", from: "8.17.0"),
         .package(url: "https://github.com/amplitude/experiment-ios-client", from: "1.13.5"),
-        .package(url: "https://github.com/getsentry/sentry-cocoa.git", from: "8.35.0"),
+        .package(url: "https://github.com/getsentry/sentry-cocoa.git", from: "9.0.0"),
         .package(url: "https://github.com/amplitude/AmplitudeSessionReplay-iOS", branch: "main"),
     ],
     targets: [
