@@ -151,7 +151,8 @@ public class CoreManager {
             purchaseManager?.initialize(allIdentifiers: configuration.paywallDataSource.allPurchaseIDs, proIdentifiers: configuration.paywallDataSource.allProPurchaseIDs)
             
             remoteConfigManager = CoreRemoteConfigManager(deploymentKey: configuration.appSettings.amplitudeDeploymentKey,
-                                                          userInfo: [InternalUserProperty.app_environment.key: AppEnvironment.current.rawValue])
+                                                          userInfo: [InternalUserProperty.app_environment.key: AppEnvironment.current.rawValue],
+                                                          customServerURL: configuration.customAmplitudeServer)
             
             let installPath = "/install-application"
             let purchasePath = "/subscribe"

@@ -17,6 +17,7 @@ public protocol CoreConfigurationProtocol {
     var attributionServerDataSource: any AttributionServerDataSource { get }
     var sentryConfigDataSource: (any SentryDataSourceProtocol)? { get }
     var appLocalization: String { get }
+    var customAmplitudeServer: String? { get }
 }
 
 public extension CoreConfigurationProtocol {
@@ -35,5 +36,9 @@ public extension CoreConfigurationProtocol {
     
     var appLocalization: String {
         return Locale.current.identifier
+    }
+    
+    var customAmplitudeServer: String? {
+        return nil
     }
 }
