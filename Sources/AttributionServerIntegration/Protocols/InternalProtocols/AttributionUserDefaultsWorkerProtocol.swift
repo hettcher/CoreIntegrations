@@ -20,4 +20,7 @@ internal protocol AttributionUserDefaultsWorkerProtocol {
 
     func getServerUserID() -> AttributionUserUUID?
     func saveServerUserID(_ id: AttributionUserUUID)
+
+    func getAppTransactionSent() -> Bool
+    func saveAppTransactionSent(_ sent: Bool)
 }

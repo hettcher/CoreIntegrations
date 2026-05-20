@@ -10,4 +10,8 @@ internal protocol AttributionServerWorkerProtocol {
                                authToken: AttributionServerToken,
                                isBackgroundSession: Bool,
                                completion: @escaping ((Bool) -> Void))
+    func sendAppTransaction(parameters: AttributionAppTransactionRequestModel,
+                            authToken: AttributionServerToken,
+                            isBackgroundSession: Bool,
+                            completion: @escaping ((Bool) -> Void))
 }

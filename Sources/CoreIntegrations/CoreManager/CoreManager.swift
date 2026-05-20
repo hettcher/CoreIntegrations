@@ -159,14 +159,16 @@ public class CoreManager {
             
             let installPath = "/install-application"
             let purchasePath = "/subscribe"
+            let appTransactionPath = "/app-transaction"
             let installURLPath = configuration.attributionServerDataSource.installPath
             let purchaseURLPath = configuration.attributionServerDataSource.purchasePath
-            
+
             let attributionConfiguration = AttributionConfigData(authToken: attributionToken,
                                                                  installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
                                                                  installPath: installPath,
                                                                  purchasePath: purchasePath,
+                                                                 appTransactionPath: appTransactionPath,
                                                                  appsflyerID: appsflyerToken,
                                                                  appEnvironment: AppEnvironment.current.rawValue,
                                                                  facebookData: facebookData)
@@ -371,26 +373,29 @@ extension CoreManager {
     func handleAttributionInstall() {
         let installPath = "/install-application"
         let purchasePath = "/subscribe"
-        
+        let appTransactionPath = "/app-transaction"
+
         let installURLPath = InternalRemoteConfig.install_server_path.internalValue
         let purchaseURLPath = InternalRemoteConfig.purchase_server_path.internalValue
         if installURLPath != "" && purchaseURLPath != "" {
             let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
                                                                  installPath: installPath,
-                                                                 purchasePath: purchasePath)
-            
+                                                                 purchasePath: purchasePath,
+                                                                 appTransactionPath: appTransactionPath)
+
             AttributionServerManager.shared.configureURLs(config: attributionConfiguration)
         } else {
             if let serverDataSource = configuration?.attributionServerDataSource {
                 let installURLPath = serverDataSource.installPath
                 let purchaseURLPath = serverDataSource.purchasePath
-                
+
                 let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                      purchaseServerURLPath: purchaseURLPath,
                                                                      installPath: installPath,
-                                                                     purchasePath: purchasePath)
-                
+                                                                     purchasePath: purchasePath,
+                                                                     appTransactionPath: appTransactionPath)
+
                 AttributionServerManager.shared.configureURLs(config: attributionConfiguration)
             } else {
                 assertionFailure()

@@ -6,12 +6,14 @@ public class AttributionServerWorker {
     let purchaseServerURLPath: String
     let installPath: String
     let purchasePath: String
-    
-    init(installServerURLPath: String, purchaseServerURLPath: String, installPath: String, purchasePath: String) {
+    let appTransactionPath: String
+
+    init(installServerURLPath: String, purchaseServerURLPath: String, installPath: String, purchasePath: String, appTransactionPath: String) {
         self.installServerURLPath = installServerURLPath
         self.purchaseServerURLPath = purchaseServerURLPath
         self.installPath = installPath
         self.purchasePath = purchasePath
+        self.appTransactionPath = appTransactionPath
     }
     
     fileprivate var isSyncingInstall = false
@@ -27,11 +29,25 @@ public class AttributionServerWorker {
         let urlOrNil = URL(string: urlPath)
         return urlOrNil
     }
+
+    fileprivate var appTransactionURL: URL? {
+        let urlPath = "\(installServerURLPath)\(appTransactionPath)"
+        let urlOrNil = URL(string: urlPath)
+        return urlOrNil
+    }
     
     fileprivate var session: URLSession {
         let config = URLSessionConfiguration.default
         config.waitsForConnectivity = false
         config.timeoutIntervalForRequest = 5
+        let session = URLSession(configuration: config)
+        return session
+    }
+    
+    fileprivate var longerSession: URLSession {
+        let config = URLSessionConfiguration.default
+        config.waitsForConnectivity = false
+        config.timeoutIntervalForRequest = 60 // the same as default
         let session = URLSession(configuration: config)
         return session
     }
@@ -162,6 +178,50 @@ extension AttributionServerWorker: AttributionServerWorkerProtocol {
                 return
             }
             
+            completion(true)
+        }
+        task.resume()
+    }
+
+    func sendAppTransaction(parameters: AttributionAppTransactionRequestModel,
+                            authToken: AttributionServerToken,
+                            isBackgroundSession: Bool = false,
+                            completion: @escaping ((Bool) -> Void)) {
+        let jsonDataOrNil = try? JSONEncoder().encode(parameters)
+
+        guard let url = appTransactionURL, let jsonData = jsonDataOrNil else {
+            print("\n\n\nANALYTICS SEND ERROR\n\n\n")
+            completion(false)
+            return
+        }
+
+        let request = createRequest(url: url, body: jsonData, authToken: authToken)
+
+        let taskSession: URLSession
+        if isBackgroundSession {
+            taskSession = waitingSession
+        } else {
+            taskSession = longerSession
+        }
+
+        let task = taskSession.dataTask(with: request) { (data, response, error) in
+            if let error = error {
+                self.handleServerError()
+
+                if taskSession.configuration.waitsForConnectivity == false {
+                    self.sendAppTransaction(parameters: parameters, authToken: authToken,
+                                            isBackgroundSession: true, completion: completion)
+                }
+
+                completion(false)
+                return
+            }
+
+            guard data != nil else {
+                completion(false)
+                return
+            }
+
             completion(true)
         }
         task.resume()
