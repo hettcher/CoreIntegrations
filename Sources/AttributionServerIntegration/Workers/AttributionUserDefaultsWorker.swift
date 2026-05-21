@@ -11,6 +11,7 @@ class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
     fileprivate let generatedTokenKey = "ANALYTICS_GENERATED_TOKEN"
     fileprivate let installResult = "ANALYTICS_INSTALL_RESULT"
     fileprivate let uuidKey = "STORED_UUID_KEY"
+    fileprivate let appTransactionSentKey = "ANALYTICS_APP_TRANSACTION_SENT"
     
     var uuid: String {
         if let storedUUID = userDefaults.string(forKey: uuidKey) {
@@ -104,6 +105,15 @@ class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
     
     func deleteSavedPurchaseData() {
         userDefaults.removeObject(forKey: purchaseDataKey)
+        userDefaults.synchronize()
+    }
+
+    func getAppTransactionSent() -> Bool {
+        return userDefaults.bool(forKey: appTransactionSentKey)
+    }
+
+    func saveAppTransactionSent(_ sent: Bool) {
+        userDefaults.set(sent, forKey: appTransactionSentKey)
         userDefaults.synchronize()
     }
 }

@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'CoreIntegrations'
-  s.version          = '2.11.0amplfinal+payload'
+  s.version          = '2.12.0amplfinal+payload+transaction'
   s.summary          = 'CoreIntegrations framework'
 
   s.description      = 'Description'
@@ -33,7 +33,7 @@ Pod::Spec.new do |s|
   s.dependency 'AnalyticsConnector'
   s.dependency 'AmplitudeExperiment'
   s.dependency 'Sentry'
-  s.dependency 'AmplitudeSessionReplay', :git => 'https://github.com/amplitude/AmplitudeSessionReplay-iOS.git'
-  s.dependency 'AmplitudeiOSSessionReplayMiddleware', :git => 'https://github.com/amplitude/AmplitudeSessionReplay-iOS.git'
+  s.dependency 'AmplitudeSessionReplay'
+  s.dependency 'AmplitudeiOSSessionReplayMiddleware'
   
 end

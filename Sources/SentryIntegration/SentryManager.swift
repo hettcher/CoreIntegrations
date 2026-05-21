@@ -52,13 +52,17 @@ public class SentryManager: InternalSentryManagerProtocol, PublicSentryManagerPr
                 return event
             }
             
+            // Indicates the percentage of the tracing data that is collected.
             // Set tracesSampleRate to 1.0 to capture 100% of transactions for tracing.
             // We recommend adjusting this value in production.
             options.tracesSampleRate = NSNumber(value: data.tracesSampleRate)
             
-            // Sample rate for profiling, applied on top of TracesSampleRate.
-            // We recommend adjusting this value in production.
-            options.profilesSampleRate = NSNumber(value: data.profilesSampleRate)
+            options.configureProfiling = {
+                // The % of user sessions in which to enable profiling.
+                // Sample rate for profiling, applied on top of TracesSampleRate.
+                // We recommend adjusting this value in production.
+                $0.sessionSampleRate = data.profilesSampleRate
+            }
             
             options.enableCaptureFailedRequests = data.shouldCaptureHttpRequests
             

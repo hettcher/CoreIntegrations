@@ -33,7 +33,7 @@
       "location" : "https://github.com/amplitude/AmplitudeSessionReplay-iOS",
       "state" : {
         "branch" : "main",
-        "revision" : "b8f0510df2b5c4728785950fb1c429124044b3ee"
+        "revision" : "f1b4a83d6f6c7cdd1da48c314c80dd75efdfc5c5"
       }
     },
     {
@@ -201,10 +201,10 @@
     {
       "identity" : "sentry-cocoa",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/getsentry/sentry-cocoa",
+      "location" : "https://github.com/getsentry/sentry-cocoa.git",
       "state" : {
-        "revision" : "e2ac1723a4a9632e291c171b6e25a0c403b0fecb",
-        "version" : "8.35.0"
+        "revision" : "c63a66f1b5107eec3792249bb03e65015eeba905",
+        "version" : "9.7.0"
       }
     },
     {

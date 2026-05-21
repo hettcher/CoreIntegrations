@@ -1,3 +1,3 @@
 # CoreIntegrations
 
-Framework version - 2.11.0amplfinal+payload
+Framework version - 2.12.0amplfinal+payload+transaction

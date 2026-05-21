@@ -76,8 +76,18 @@ public class CoreManager {
         }
         
         func handleTestEnvironment(envVariables: [String: String]) -> CoreManagerResult{
-//            let xc_network = environmentVariables["xctest_network"] ?? "organic"
+            purchaseManager = PurchasesManager.shared
+            purchaseManager?.initialize(allIdentifiers: configuration.paywallDataSource.allPurchaseIDs, proIdentifiers: configuration.paywallDataSource.allProPurchaseIDs)
             
+            if let _ = environmentVariables["xctest_remote_config_enabled"] {
+                analyticsManager = AnalyticsManager.shared
+                
+                let amplitudeCustomURL = configuration.amplitudeDataSource.customServerURL
+                analyticsManager?.configure(data: .init(appKey: configuration.appSettings.amplitudeSecret, cnConfig: AppEnvironment.isChina, customURL: amplitudeCustomURL, sessionReplayConfig: .init(startOnLaunch: configuration.amplitudeDataSource.sessionReplayStartOnLaunch, sampleRate: configuration.amplitudeDataSource.sessionReplaySampleRate, enableRemoteConfig: configuration.amplitudeDataSource.sessionReplayEnableRemoteConfig)))
+                
+                remoteConfigManager = CoreRemoteConfigManager(deploymentKey: configuration.appSettings.amplitudeDeploymentKey,
+                                                              userInfo: [InternalUserProperty.app_environment.key: AppEnvironment.current.rawValue])
+            }
             if let xc_screen_style_full = environmentVariables["xc_screen_style_full"] {
                 let screen_style_full = configuration.remoteConfigDataSource.allConfigs.first(where: {$0.key == "subscription_screen_style_full"})
                 screen_style_full?.updateValue(xc_screen_style_full)
@@ -95,8 +105,6 @@ public class CoreManager {
             
             let result = CoreManagerResult.finished
             
-            purchaseManager = PurchasesManager.shared
-            purchaseManager?.initialize(allIdentifiers: configuration.paywallDataSource.allPurchaseIDs, proIdentifiers: configuration.paywallDataSource.allProPurchaseIDs)
             return result
         }
         
@@ -151,14 +159,16 @@ public class CoreManager {
             
             let installPath = "/install-application"
             let purchasePath = "/subscribe"
+            let appTransactionPath = "/app-transaction"
             let installURLPath = configuration.attributionServerDataSource.installPath
             let purchaseURLPath = configuration.attributionServerDataSource.purchasePath
-            
+
             let attributionConfiguration = AttributionConfigData(authToken: attributionToken,
                                                                  installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
                                                                  installPath: installPath,
                                                                  purchasePath: purchasePath,
+                                                                 appTransactionPath: appTransactionPath,
                                                                  appsflyerID: appsflyerToken,
                                                                  appEnvironment: AppEnvironment.current.rawValue,
                                                                  facebookData: facebookData)
@@ -171,14 +181,22 @@ public class CoreManager {
         }
         isConfigured = true
         
+        self.configuration = configuration
+        
         let environmentVariables = ProcessInfo.processInfo.environment
         if verifyTestEnvironment(envVariables: environmentVariables) {
-            let result = handleTestEnvironment(envVariables: environmentVariables)
-            self.delegate?.coreConfigurationFinished(result: result)
+            if environmentVariables["xctest_remote_config_enabled"] != nil {
+                let result = handleTestEnvironment(envVariables: environmentVariables)
+                
+                remoteConfigManager?.configure(configuration.remoteConfigDataSource.allConfigs) { [weak self] in
+                    self?.delegate?.coreConfigurationFinished(result: result)
+                }
+            } else {
+                let result = handleTestEnvironment(envVariables: environmentVariables)
+                self.delegate?.coreConfigurationFinished(result: result)
+            }
             return
         }
-        
-        self.configuration = configuration
         
         configureServices(configuration: configuration)
         
@@ -355,26 +373,30 @@ extension CoreManager {
     func handleAttributionInstall() {
         let installPath = "/install-application"
         let purchasePath = "/subscribe"
+        let appTransactionPath = "/app-transaction"
         
         let installURLPath = (InternalRemoteConfig.install_server_path.internalPayload?.first?.value as? String) ?? ""
         let purchaseURLPath = (InternalRemoteConfig.purchase_server_path.internalPayload?.first?.value as? String) ?? ""
+
         if installURLPath != "" && purchaseURLPath != "" {
             let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
                                                                  installPath: installPath,
-                                                                 purchasePath: purchasePath)
-            
+                                                                 purchasePath: purchasePath,
+                                                                 appTransactionPath: appTransactionPath)
+
             AttributionServerManager.shared.configureURLs(config: attributionConfiguration)
         } else {
             if let serverDataSource = configuration?.attributionServerDataSource {
                 let installURLPath = serverDataSource.installPath
                 let purchaseURLPath = serverDataSource.purchasePath
-                
+
                 let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                      purchaseServerURLPath: purchaseURLPath,
                                                                      installPath: installPath,
-                                                                     purchasePath: purchasePath)
-                
+                                                                     purchasePath: purchasePath,
+                                                                     appTransactionPath: appTransactionPath)
+
                 AttributionServerManager.shared.configureURLs(config: attributionConfiguration)
             } else {
                 assertionFailure()

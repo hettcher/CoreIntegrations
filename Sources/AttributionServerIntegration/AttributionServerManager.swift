@@ -17,18 +17,20 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
         self.appsflyerID = config.appsflyerID
         self.appEnvironment = config.appEnvironment
         authorizationToken = config.authToken
-        
+
         serverWorker = AttributionServerWorker(installServerURLPath: config.installServerURLPath,
-                                                       purchaseServerURLPath: config.purchaseServerURLPath,
-                                                       installPath: config.installPath,
-                                                       purchasePath: config.purchasePath)
+                                               purchaseServerURLPath: config.purchaseServerURLPath,
+                                               installPath: config.installPath,
+                                               purchasePath: config.purchasePath,
+                                               appTransactionPath: config.appTransactionPath)
     }
-    
+
     public func configureURLs(config: AttributionConfigURLs) {
         serverWorker = AttributionServerWorker(installServerURLPath: config.installServerURLPath,
                                                purchaseServerURLPath: config.purchaseServerURLPath,
                                                installPath: config.installPath,
-                                               purchasePath: config.purchasePath)
+                                               purchasePath: config.purchasePath,
+                                               appTransactionPath: config.appTransactionPath)
     }
     
     public func syncOnAppStart(_ completion: @escaping (AttributionManagerResult?) -> Void) {
@@ -52,8 +54,9 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
         }
         
         checkAndSendSavedPurchase(userId: userID)
+        checkAndSendAppTransaction()
     }
-    
+
     public func syncPurchase(data: AttributionPurchaseModel) {
         guard authorizationToken != nil else {
             assertionFailure("TLMAnalyticsSender error: Auth token not found")
@@ -76,6 +79,7 @@ open class AttributionServerManager {
     var serverWorker: AttributionServerWorkerProtocol?
     let udefWorker: AttributionUserDefaultsWorkerProtocol = AttributionUserDefaultsWorker()
     let dataWorker: AttributionDataWorkerProtocol = AttributionDataWorker()
+    let appTransactionIDProvider: AppTransactionIDProviderProtocol = AppTransactionIDProvider()
     
     var authorizationToken: AttributionServerToken!
     var facebookData: AttributionFacebookModel? = nil
@@ -245,6 +249,44 @@ open class AttributionServerManager {
         udefWorker.saveServerUserID(uuid)
         udefWorker.deleteSavedInstallData()
         checkAndSendSavedPurchase(userId: uuid)
+        checkAndSendAppTransaction()
+    }
+
+    fileprivate func checkAndSendAppTransaction() {
+        guard udefWorker.getAppTransactionSent() == false else {
+            return
+        }
+
+        guard udefWorker.getServerUserID() != nil else {
+            return
+        }
+
+        guard let appsflyerId = appsflyerID, appsflyerId.isEmpty == false else {
+            return
+        }
+
+        guard let authToken = authorizationToken else {
+            return
+        }
+
+        Task { [weak self] in
+            guard let self else { return }
+
+            guard let appTransactionID = await self.appTransactionIDProvider.fetchAppTransactionID(),
+                  appTransactionID.isEmpty == false else {
+                return
+            }
+
+            let payload = AttributionAppTransactionRequestModel(appsflyerId: appsflyerId,
+                                                                appTransactionID: appTransactionID)
+
+            self.serverWorker?.sendAppTransaction(parameters: payload,
+                                                  authToken: authToken,
+                                                  isBackgroundSession: false) { [weak self] success in
+                guard success else { return }
+                self?.udefWorker.saveAppTransactionSent(true)
+            }
+        }
     }
     
     fileprivate func handleSendPurchaseResult(_ result: Bool,
