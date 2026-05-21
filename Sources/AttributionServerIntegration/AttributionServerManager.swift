@@ -272,19 +272,26 @@ open class AttributionServerManager {
         Task { [weak self] in
             guard let self else { return }
 
-            guard let appTransactionID = await self.appTransactionIDProvider.fetchAppTransactionID(),
-                  appTransactionID.isEmpty == false else {
+            let appTransactionID = await self.appTransactionIDProvider.fetchAppTransactionID()
+            
+            switch appTransactionID {
+            case .success(let appTransactionID):
+                guard appTransactionID.isEmpty == false else {
+                    return
+                }
+                
+                let payload = AttributionAppTransactionRequestModel(appsflyerId: appsflyerId,
+                                                                    appTransactionID: appTransactionID)
+
+                self.serverWorker?.sendAppTransaction(parameters: payload,
+                                                      authToken: authToken,
+                                                      isBackgroundSession: false) { [weak self] success in
+                    guard success else { return }
+                    self?.udefWorker.saveAppTransactionSent(true)
+                }
+                
+            default:
                 return
-            }
-
-            let payload = AttributionAppTransactionRequestModel(appsflyerId: appsflyerId,
-                                                                appTransactionID: appTransactionID)
-
-            self.serverWorker?.sendAppTransaction(parameters: payload,
-                                                  authToken: authToken,
-                                                  isBackgroundSession: false) { [weak self] success in
-                guard success else { return }
-                self?.udefWorker.saveAppTransactionSent(true)
             }
         }
     }
@@ -296,6 +303,7 @@ open class AttributionServerManager {
         } else {
             udefWorker.savePurchaseData(details)
         }
+        checkAndSendAppTransaction()
     }
     
     fileprivate func getCorrectUUID() -> String {
