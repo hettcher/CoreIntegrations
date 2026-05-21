@@ -24,7 +24,7 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
     }
 
     var sdkVersion: String {
-        return "2.12.1amplfinal+payload+transaction"
+        return "2.12.2amplf+pay+tr"
     }
     
     var osVersion: String {
