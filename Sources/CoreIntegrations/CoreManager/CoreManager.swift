@@ -437,14 +437,17 @@ extension CoreManager {
         let result = getAttributionResult()
         
         var attributionDict: [String: String] = ["network": result.network.rawValue]
+        if let ipat = result.isIPAT {
+            attributionDict["ipat"] = "\(ipat)"
+        }
         if result.userAttribution.isEmpty == false {
             attributionDict += result.userAttribution
         }
         
         let currentUserInfo = userInfo
         
-        if currentUserInfo == nil || currentUserInfo?.userSource != result.network {
-            userInfo = UserInfo(userSource: result.network, attrInfo: result.userAttribution)
+        if currentUserInfo == nil || currentUserInfo?.userSource != result.network || currentUserInfo?.isIPAT != result.isIPAT {
+            userInfo = UserInfo(userSource: result.network, isIPAT: result.isIPAT, attrInfo: result.userAttribution)
             if result.network == .organic {
                 sendUserAttribution(userAttribution: [:], status: configurationManager.statusForAnalytics)
                 
@@ -470,11 +473,11 @@ extension CoreManager {
         }
     }
     
-    func getAttributionResult() -> (network: CoreUserSource, userAttribution: [String: String]) {
+    func getAttributionResult() -> (network: CoreUserSource, isIPAT: Bool?, userAttribution: [String: String]) {
         let deepLinkResult = self.appsflyerManager?.deeplinkResult ?? [:]
         let asaResult = AttributionServerManager.shared.installResultData
         
-        let isIPAT = asaResult?.isIPAT ?? false
+        let isIPAT = asaResult?.isIPAT
         let isASA = (asaResult?.asaAttribution["campaignName"] as? String != nil) ||
         (asaResult?.asaAttribution["campaign_name"] as? String != nil)
         
@@ -490,14 +493,12 @@ extension CoreManager {
                 networkSource = .other(networkValue)
             }
             userAttribution = deepLinkResult
-        } else if isIPAT {
-            networkSource = .ipat
         } else if isASA {
             networkSource = .asa
             userAttribution = asaResult?.asaAttribution ?? [:]
         }
         
-        return (networkSource, userAttribution)
+        return (networkSource, isIPAT, userAttribution)
     }
 }
 
