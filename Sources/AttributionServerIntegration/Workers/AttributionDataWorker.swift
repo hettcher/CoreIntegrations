@@ -24,7 +24,7 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
     }
 
     var sdkVersion: String {
-        return "2.11.2amplfconfigcb+cus"
+        return "2.11.3amplfconfigcb+cus"
     }
     
     var osVersion: String {
