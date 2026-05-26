@@ -447,10 +447,22 @@ extension CoreManager {
         if currentUserInfo == nil || currentUserInfo?.userSource != result.network || currentUserInfo?.isIPAT != result.isIPAT {
             userInfo = UserInfo(userSource: result.network, isIPAT: result.isIPAT, attrInfo: result.userAttribution)
             if result.network == .organic {
-                sendUserAttribution(userAttribution: [:], status: configurationManager.statusForAnalytics)
-                
-                remoteConfigManager?.updateRemoteConfig([:]) { [weak self] in
-                    InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
+                if let ipat = result.isIPAT, currentUserInfo?.isIPAT != result.isIPAT {
+                    if isUpdated {
+                        sendUserAttributionUpdate(userAttribution: ["ipat": "\(ipat)"])
+                    } else {
+                        sendUserAttribution(userAttribution: ["ipat": "\(ipat)"], status: configurationManager.statusForAnalytics)
+                    }
+                    
+                    remoteConfigManager?.updateRemoteConfig(["ipat": "\(ipat)"]) { [weak self] in
+                        InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
+                    }
+                } else {
+                    sendUserAttribution(userAttribution: [:], status: configurationManager.statusForAnalytics)
+                    
+                    remoteConfigManager?.updateRemoteConfig([:]) { [weak self] in
+                        InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
+                    }
                 }
             } else {
                 if isUpdated {
