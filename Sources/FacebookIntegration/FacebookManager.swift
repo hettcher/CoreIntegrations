@@ -20,7 +20,7 @@ extension FacebookManager: FacebookManagerProtocol {
     }
     
     public var anonUserID: String {
-        return AppEvents.shared.anonymousID 
+        return AppEvents.shared.anonymousID
     }
     
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {

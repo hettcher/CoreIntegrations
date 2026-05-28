@@ -8,11 +8,11 @@ internal protocol AttributionDataWorkerProtocol {
     var osVersion: String { get }
     var appVersion: String { get }
     var isAdTrackingEnabled: Bool { get }
-    func attributionDetails() async -> AttributionDetails?
     var storeCountry: String { get }
     
     var receiptToken: String { get }
     
+    func attributionDetails() async -> AttributionDetails?
     func generateUniqueToken() -> String
 }
 
