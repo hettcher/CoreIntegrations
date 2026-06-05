@@ -13,6 +13,8 @@ public protocol SentryDataSourceProtocol: AnyObject {
     var tracesSampleRate: Float { get }
     var profilesSampleRate: Float { get }
     var shouldCaptureHttpRequests: Bool { get }
+    var enableAppHangTracking: Bool { get }
+    var appHangTimeoutInterval: TimeInterval { get }
     var httpCodesRange: NSRange { get }
     var handledDomains:[String]? { get }
     var diagnosticLevel: UInt { get }
@@ -29,6 +31,14 @@ public extension SentryDataSourceProtocol {
     
     var shouldCaptureHttpRequests: Bool {
         return true
+    }
+    
+    var enableAppHangTracking: Bool {
+        return true
+    }
+    
+    var appHangTimeoutInterval: TimeInterval {
+        return 2.0
     }
     
     var httpCodesRange: NSRange {
