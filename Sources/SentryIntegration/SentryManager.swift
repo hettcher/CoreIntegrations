@@ -58,7 +58,7 @@ public class SentryManager: InternalSentryManagerProtocol, PublicSentryManagerPr
             
             // Sample rate for profiling, applied on top of TracesSampleRate.
             // We recommend adjusting this value in production.
-            options.profilesSampleRate = NSNumber(value: data.profilesSampleRate)
+            // options.profilesSampleRate = NSNumber(value: data.profilesSampleRate)
             
             options.enableCaptureFailedRequests = data.shouldCaptureHttpRequests
             
