@@ -110,6 +110,8 @@ public class CoreManager {
                                                     debug: sentryDataSource.debug,
                                                     tracesSampleRate: sentryDataSource.tracesSampleRate,
                                                     profilesSampleRate: sentryDataSource.profilesSampleRate,
+                                                    appHangTimeoutInterval: sentryDataSource.appHangTimeoutInterval,
+                                                    enableAppHangTracking: sentryDataSource.enableAppHangTracking,
                                                     shouldCaptureHttpRequests: sentryDataSource.shouldCaptureHttpRequests,
                                                     httpCodesRange: sentryDataSource.httpCodesRange,
                                                     handledDomains: sentryDataSource.handledDomains)
