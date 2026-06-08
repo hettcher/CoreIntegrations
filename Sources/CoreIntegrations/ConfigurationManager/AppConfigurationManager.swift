@@ -8,6 +8,7 @@ class AppConfigurationManager {
     private var isFirstStart: Bool
     
     private var completedEvents = [any ConfigurationEvent]()
+    private var completionErrors = [String: Error]()
     private var timout: Int = 6
     private var currentSecond = 0
     private var waitingCallbacks = [(ConfigurationResult) -> Void]()
@@ -31,7 +32,30 @@ class AppConfigurationManager {
     private var isConfigurationFinished: Bool {
         return isTimerFinished || configurationCompletelyFinished
     }
-    
+
+    /// Per-event configuration status for diagnostic analytics:
+    /// "finished" / "error: <code>" / "not finished".
+    var statusForAnalytics: [String: String] {
+        var result = [String: String]()
+        completedEvents.forEach { event in
+            let error = completionErrors.first(where: { $0.key == event.key })?.value
+            if let nserror = error as? NSError {
+                result[event.key] = "error: \(nserror.code)"
+            } else {
+                result[event.key] = "finished"
+            }
+        }
+        let notCompleted = model.allConfigurationEvents.filter { event in
+            !completedEvents.contains { completedEvent in
+                completedEvent.key == event.key
+            }
+        }
+        notCompleted.forEach { event in
+            result[event.key] = "not finished"
+        }
+        return result
+    }
+
     init(model: CoreConfigurationModel, isFirstStart: Bool, timeout: Int = 6) {
         self.model = model
         self.isFirstStart = isFirstStart
@@ -54,7 +78,18 @@ class AppConfigurationManager {
     }
     
     public func handleCompleted(event: any ConfigurationEvent) {
-        completedEvents.append(event)
+        handleCompleted(event: event, error: nil)
+    }
+
+    public func handleCompleted(event: any ConfigurationEvent, error: Error?) {
+        if !completedEvents.contains(where: { $0.key == event.key }) {
+            completedEvents.append(event)
+        }
+        if let error {
+            completionErrors[event.key] = error
+        } else {
+            completionErrors.removeValue(forKey: event.key)
+        }
         checkConfiguration()
         checkATTConfiguration()
     }

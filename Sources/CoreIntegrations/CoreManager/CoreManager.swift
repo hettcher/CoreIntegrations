@@ -42,9 +42,15 @@ public class CoreManager {
     var sentryManager: InternalSentryManagerProtocol = SentryManager.shared
     
     var delegate: CoreManagerDelegate?
-    
+
     var configurationResultManager = ConfigurationResultManager()
-    
+
+    var networkMonitor = NetworkManager()
+    /// Last attribution source already reported to analytics — prevents duplicate
+    /// `framework_attribution_update` events on the boundary deeplink and on repeated
+    /// AppsFlyer conversion callbacks that carry the same source.
+    private var lastSentAttributionSource: CoreUserSource?
+
     
     func configureAll(configuration: CoreConfigurationProtocol) {
         guard isConfigured == false else {
@@ -93,7 +99,9 @@ public class CoreManager {
         }
         
         self.configuration = configuration
-        
+
+        networkMonitor.startMonitoring()
+
         if let sentryDataSource = configuration.sentryConfigDataSource {
             let sentryConfig = SentryConfigData(dsn: sentryDataSource.dsn,
                                                 debug: sentryDataSource.debug,
@@ -236,9 +244,9 @@ public class CoreManager {
             
             self?.sendAttEvent(answer: false)
             let status = ATTrackingManager.trackingAuthorizationStatus
-            self?.handleATTAnswered(status)
+            self?.handleATTAnswered(status, error: NSError(domain: "coreintegrations.att.timeout", code: 6456))
         }
-            
+
         ATTrackingManager.requestTrackingAuthorization { [weak self] status in
             guard self?.attAnswered == false else { return }
             self?.attAnswered = true
@@ -248,10 +256,11 @@ public class CoreManager {
         }
     }
     
-    func handleATTAnswered(_ status: ATTrackingManager.AuthorizationStatus) {
+    func handleATTAnswered(_ status: ATTrackingManager.AuthorizationStatus, error: Error? = nil) {
+        sendConfigurationStarted(status: [:])
         AppConfigurationManager.shared?.startTimoutTimer()
-        
-        InternalConfigurationEvent.attConcentGiven.markAsCompleted()
+
+        InternalConfigurationEvent.attConcentGiven.markAsCompleted(error: error)
         if let configurationManager = AppConfigurationManager.shared {
             configurationManager.startTimoutTimer()
         } else {
@@ -295,7 +304,7 @@ public class CoreManager {
             }
             
             AttributionServerManager.shared.syncOnAppStart { result in
-                InternalConfigurationEvent.attributionServerHandled.markAsCompleted()
+                InternalConfigurationEvent.attributionServerHandled.markAsCompleted(error: AttributionServerManager.shared.installError)
             }
         }
 
@@ -340,10 +349,18 @@ public class CoreManager {
         }
         
         configurationManager.signForConfigurationEnd { configurationResult in
-            
+
             let result = self.getConfigurationResult(isFirstConfiguration: true)
+
+            let attributionDict = ["network": result.userSource.rawValue] + (result.userSourceInfo ?? [:])
+            self.sendUserAttribution(userAttribution: attributionDict, status: configurationManager.statusForAnalytics)
+            self.lastSentAttributionSource = result.userSource
+
             self.delegate?.coreConfigurationFinished(result: result)
-            
+
+            self.sendConfigurationFinished(status: configurationManager.statusForAnalytics)
+            self.networkMonitor.stopMonitoring()
+
             // calculate attribution
             // calculate correct paywall name
             // return everything to the app
@@ -358,6 +375,13 @@ public class CoreManager {
         
         if configurationManager.configurationFinishHandled {
             let result = getConfigurationResult(isFirstConfiguration: false)
+
+            if result.userSource != lastSentAttributionSource {
+                let attributionDict = ["network": result.userSource.rawValue] + (result.userSourceInfo ?? [:])
+                sendUserAttributionUpdate(userAttribution: attributionDict)
+                lastSentAttributionSource = result.userSource
+            }
+
             self.delegate?.coreConfigurationUpdated(newResult: result)
         }
     }

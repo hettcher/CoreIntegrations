@@ -93,7 +93,9 @@ extension AppfslyerManager: AppfslyerManagerProtocol {
     }
     
     public func startAppsflyer() {
-        AppsFlyerLib.shared().start()
+        AppsFlyerLib.shared().start { [weak self] result, error in
+            self?.delegate?.appsflyerStartCompleted(error: error)
+        }
     }
     
     public func logTrialPurchase() {
