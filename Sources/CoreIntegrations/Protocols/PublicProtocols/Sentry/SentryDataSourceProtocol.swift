@@ -16,8 +16,9 @@ public protocol SentryDataSourceProtocol: AnyObject {
     var enableAppHangTracking: Bool { get }
     var appHangTimeoutInterval: TimeInterval { get }
     var httpCodesRange: NSRange { get }
-    var handledDomains:[String]? { get }
+    var handledDomains: [String]? { get }
     var diagnosticLevel: UInt { get }
+    var swizzleClassNameExcludes: Set<String> { get }
 }
 
 public extension SentryDataSourceProtocol {
