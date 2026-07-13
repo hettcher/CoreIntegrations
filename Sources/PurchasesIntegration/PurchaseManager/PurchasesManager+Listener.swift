@@ -1,6 +1,7 @@
 
 import Foundation
 import StoreKit
+import LoggingIntegration
 
 extension PurchasesManager {
     public func listenForPendingPurchases(_ result: @escaping (Transaction?, (any Error)?) -> Void) {
@@ -8,22 +9,22 @@ extension PurchasesManager {
     }
     
     public func listenForTransactions() -> Task<Void, Error> {
-        debugPrint("🏦 listenForTransactions ✅ Setup listener")
+        DebugLogger.log("🏦 listenForTransactions ✅ Setup listener")
         return Task.detached {
-            debugPrint("🏦 listenForTransactions ⚈ ⚈ ⚈ Recieved updates... ⚈ ⚈ ⚈")
+            DebugLogger.log("🏦 listenForTransactions ⚈ ⚈ ⚈ Recieved updates... ⚈ ⚈ ⚈")
             for await result in Transaction.updates {
                 do {
-                    debugPrint("🏦 listenForTransactions ⚈ ⚈ ⚈ Checking verification for transaction \(result.debugDescription) ⚈ ⚈ ⚈")
+                    DebugLogger.log("🏦 listenForTransactions ⚈ ⚈ ⚈ Checking verification for transaction \(result.debugDescription) ⚈ ⚈ ⚈")
                     let transaction = try self.checkVerified(result)
-                    debugPrint("🏦 listenForTransactions ✅ Transaction Verified.")
+                    DebugLogger.log("🏦 listenForTransactions ✅ Transaction Verified.")
                     await self.updateProductStatus()
-                    debugPrint("🏦 listenForTransactions ✅ Updated Customer Product Status.")
+                    DebugLogger.log("🏦 listenForTransactions ✅ Updated Customer Product Status.")
                     await transaction.finish()
                     self.purchasePendingCallback?(transaction, nil)
-                    debugPrint("🏦 listenForTransactions ✅ Finished Transaction.")
+                    DebugLogger.log("🏦 listenForTransactions ✅ Finished Transaction.")
                 } catch {
                     self.purchasePendingCallback?(nil, error)
-                    debugPrint("🏦 listenForTransactions ❌ Transaction verification failed.")
+                    DebugLogger.log("🏦 listenForTransactions ❌ Transaction verification failed.")
                 }
             }
         }

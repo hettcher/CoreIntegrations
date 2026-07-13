@@ -212,8 +212,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/getsentry/sentry-cocoa.git",
       "state" : {
-        "revision" : "0041fe6374a0557747d3c7f19888510a30684dfa",
-        "version" : "9.1.0"
+        "revision" : "c63a66f1b5107eec3792249bb03e65015eeba905",
+        "version" : "9.7.0"
       }
     },
     {
@@ -230,8 +230,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-protobuf.git",
       "state" : {
-        "revision" : "3c54ab05249f59f2c6641dd2920b8358ea9ed127",
-        "version" : "1.24.0"
+        "revision" : "5596511fce902e649c403cd4d6d5da1254f142b7",
+        "version" : "1.35.1"
       }
     }
   ],

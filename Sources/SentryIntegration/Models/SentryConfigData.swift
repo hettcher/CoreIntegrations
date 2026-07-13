@@ -4,17 +4,31 @@ import Foundation
 public struct SentryConfigData {
     let dsn: String
     let debug: Bool
-    var enableLogs: Bool = false
-    var tracesSampleRate: Float = 1.0
-//    var profilesSampleRate: Float = 1.0
-    var appHangTimeoutInterval: TimeInterval = 2.0
-    var enableAppHangTracking: Bool = true
-    var shouldCaptureHttpRequests: Bool = true
-    var httpCodesRange: NSRange = NSMakeRange(202, 599)
-    let handledDomains:[String]?
-    var diagnosticLevel: UInt = 0
+    var enableLogs: Bool
+    var tracesSampleRate: Float
+//    var profilesSampleRate: Float
+    var appHangTimeoutInterval: TimeInterval
+    var enableAppHangTracking: Bool
+    var shouldCaptureHttpRequests: Bool
+    var httpCodesRange: NSRange
+    let handledDomains: [String]?
+    var diagnosticLevel: UInt
+    var swizzleClassNameExcludes: Set<String>
 
-    public init(dsn: String, debug: Bool, enableLogs: Bool = false, tracesSampleRate: Float = 1.0, appHangTimeoutInterval: TimeInterval = 2.0, enableAppHangTracking: Bool = true, shouldCaptureHttpRequests: Bool = true, httpCodesRange: NSRange = NSMakeRange(202, 599), handledDomains: [String]? = nil, diagnosticLevel: UInt = 0) {
+    public init(
+        dsn: String,
+        debug: Bool,
+        enableLogs: Bool = false,
+        tracesSampleRate: Float = 1.0,
+        //  profilesSampleRate: Float = 1.0,
+        appHangTimeoutInterval: TimeInterval = 2.0,
+        enableAppHangTracking: Bool = true,
+        shouldCaptureHttpRequests: Bool = true,
+        httpCodesRange: NSRange = NSMakeRange(202, 599),
+        handledDomains: [String]? = nil,
+        diagnosticLevel: UInt = 0,
+        swizzleClassNameExcludes: Set<String> = []
+    ) {
         self.dsn = dsn
         self.debug = debug
         self.tracesSampleRate = tracesSampleRate
@@ -26,5 +40,6 @@ public struct SentryConfigData {
         self.handledDomains = handledDomains
         self.diagnosticLevel = diagnosticLevel
         self.enableLogs = enableLogs
+        self.swizzleClassNameExcludes = swizzleClassNameExcludes
     }
 }

@@ -16,8 +16,13 @@ public class AmplitudeExperimentManager {
     public var allRemoteValues = [String: String]()
     public var remoteError: Error?
 
-    init(deploymentKey: String, userInfo: [String: String]) {
+    init(deploymentKey: String, userInfo: [String: String], customServerURL: String? = nil) {
         let builder = ExperimentConfigBuilder()
+        
+        if let customServerURL = customServerURL {
+            builder.serverUrl(customServerURL)
+        }
+        
         builder.automaticExposureTracking(false)
         
         let config = builder.build()
@@ -96,7 +101,7 @@ extension AmplitudeExperimentManager: RemoteConfigManager {
         client.exposure(key: config.key)
     }
     
-    public func updateRemoteConfig(_ userProperies: [String: String], completion: @escaping () -> Void) {
+    public func updateRemoteConfig(_ userProperies: [String: Any], completion: @escaping () -> Void) {
         self.fetch(userProperties: userProperies) {
             completion()
         }

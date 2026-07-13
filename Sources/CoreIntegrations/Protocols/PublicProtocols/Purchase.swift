@@ -30,6 +30,32 @@ public struct Purchase: Hashable {
         self.purchaseGroup = purchaseGroup
     }
     
+    public var statuses: [StoreKit.Product.SubscriptionInfo.Status]? {
+        get async {
+            guard let subscription = product.subscription else { return nil }
+            do {
+                let statuses = try await subscription.status
+                return statuses
+            } catch {
+                return nil
+            }
+        }
+    }
+    
+    
+    public var renewalState: StoreKit.Product.SubscriptionInfo.RenewalState? {
+        get async {
+            guard let subscription = product.subscription else { return nil }
+            do {
+                let statuses = try await subscription.status
+                let state = statuses.last?.state
+                return state
+            } catch {
+                return nil
+            }
+        }
+    }
+    
     public var storeProduct: Product {
         return product
     }

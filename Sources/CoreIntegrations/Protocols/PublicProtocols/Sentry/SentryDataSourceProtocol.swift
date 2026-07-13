@@ -8,8 +8,9 @@ public protocol SentryDataSourceProtocol: AnyObject {
     var profilesSampleRate: Float { get }
     var shouldCaptureHttpRequests: Bool { get }
     var httpCodesRange: NSRange { get }
-    var handledDomains:[String]? { get }
+    var handledDomains: [String]? { get }
     var diagnosticLevel: UInt { get }
+    var swizzleClassNameExcludes: Set<String> { get }
 }
 
 public extension SentryDataSourceProtocol {
@@ -39,5 +40,9 @@ public extension SentryDataSourceProtocol {
     
     var diagnosticLevel: UInt {
         return 0
+    }
+    
+    var swizzleClassNameExcludes: Set<String> {
+        return []
     }
 }

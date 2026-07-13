@@ -24,18 +24,20 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
         shouldAwaitExternalAuth = config.hasExternalAuth
         
         serverWorker = AttributionServerWorker(installServerURLPath: config.installServerURLPath,
-                                                       purchaseServerURLPath: config.purchaseServerURLPath,
-                                                       installPath: config.installPath,
-                                                       purchasePath: config.purchasePath,
+                                               purchaseServerURLPath: config.purchaseServerURLPath,
+                                               installPath: config.installPath,
+                                               purchasePath: config.purchasePath,
+                                               appTransactionPath: config.appTransactionPath,
                                                externalAuthPath: config.externalAuthPath,
                                                tokensPath: config.tokensPath)
     }
-    
+
     public func configureURLs(config: AttributionConfigURLs) {
         serverWorker = AttributionServerWorker(installServerURLPath: config.installServerURLPath,
                                                purchaseServerURLPath: config.purchaseServerURLPath,
                                                installPath: config.installPath,
                                                purchasePath: config.purchasePath,
+                                               appTransactionPath: config.appTransactionPath,
                                                externalAuthPath: config.externalAuthPath,
                                                tokensPath: config.tokensPath)
     }
@@ -61,9 +63,10 @@ extension AttributionServerManager: AttributionServerManagerProtocol {
         }
         
         checkAndSendSavedPurchase(userId: userID)
+        checkAndSendAppTransaction()
         checkAndSendSavedExternalAuth(userId: userID)
     }
-    
+
     public func syncPurchase(data: AttributionPurchaseModel) {
         guard authorizationToken != nil else {
             assertionFailure("TLMAnalyticsSender error: Auth token not found")
@@ -97,6 +100,7 @@ open class AttributionServerManager {
     var serverWorker: AttributionServerWorkerProtocol?
     let udefWorker: AttributionUserDefaultsWorkerProtocol = AttributionUserDefaultsWorker()
     let dataWorker: AttributionDataWorkerProtocol = AttributionDataWorker()
+    let appTransactionIDProvider: AppTransactionIDProviderProtocol = AppTransactionIDProvider()
     
     var authorizationToken: AttributionServerToken!
     var facebookData: AttributionFacebookModel? = nil
@@ -243,6 +247,7 @@ extension AttributionServerManager {
         udefWorker.saveServerUserID(uuid)
         udefWorker.deleteSavedInstallData()
         checkAndSendSavedPurchase(userId: uuid)
+        checkAndSendAppTransaction()
         checkAndSendSavedExternalAuth(userId: uuid)
     }
 }
@@ -302,6 +307,50 @@ extension AttributionServerManager {
             self.handleSendPurchaseResult(response, details: details)
         }
     }
+
+    fileprivate func checkAndSendAppTransaction() {
+        guard udefWorker.getAppTransactionSent() == false else {
+            return
+        }
+
+        guard udefWorker.getServerUserID() != nil else {
+            return
+        }
+
+        guard let appsflyerId = appsflyerID, appsflyerId.isEmpty == false else {
+            return
+        }
+
+        guard let authToken = authorizationToken else {
+            return
+        }
+
+        Task { [weak self] in
+            guard let self else { return }
+
+            let appTransactionID = await self.appTransactionIDProvider.fetchAppTransactionID()
+            
+            switch appTransactionID {
+            case .success(let appTransactionID):
+                guard appTransactionID.isEmpty == false else {
+                    return
+                }
+                
+                let payload = AttributionAppTransactionRequestModel(appsflyerId: appsflyerId,
+                                                                    appTransactionID: appTransactionID)
+
+                self.serverWorker?.sendAppTransaction(parameters: payload,
+                                                      authToken: authToken,
+                                                      isBackgroundSession: false) { [weak self] success in
+                    guard success else { return }
+                    self?.udefWorker.saveAppTransactionSent(true)
+                }
+                
+            default:
+                return
+            }
+        }
+    }
     
     fileprivate func handleSendPurchaseResult(_ result: Bool,
                                               details: AttributionPurchaseModel) {
@@ -310,6 +359,7 @@ extension AttributionServerManager {
         } else {
             udefWorker.savePurchaseData(details)
         }
+        checkAndSendAppTransaction()
     }
 }
 
@@ -359,7 +409,7 @@ extension AttributionServerManager {
     }
     
     fileprivate func sendFCMToken(userId: String, fcmToken: String, localization: String, completion: @escaping (Bool) -> Void) {
-        let parameters = AttributionTokenRequestModel(userId: userId, fcmToken: fcmToken, localization: localization)
+        let parameters = AttributionTokenRequestModel(userId: userId, fcmToken: fcmToken, localization: localization, environment: appEnvironment)
         
         serverWorker?.sendFCMToken(parameters: parameters,
                                    authToken: authorizationToken,

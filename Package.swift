@@ -37,6 +37,7 @@ let package = Package(
                     "SentryIntegration",
                     "FirebaseIntegration",
                     "AttestationIntegration",
+                    "LoggingIntegration",
                 ],
                 linkerSettings: [
                   .linkedFramework("UIKit", .when(platforms: [.iOS])),
@@ -90,16 +91,18 @@ let package = Package(
                 ]
         ),
         .target(name: "PurchasesIntegration",
+                dependencies: ["LoggingIntegration"],
                 path: "Sources/PurchasesIntegration",
                 linkerSettings: [
                   .linkedFramework("UIKit", .when(platforms: [.iOS])),
                 ]
         ),
         .target(name: "AttributionServerIntegration",
+                dependencies: ["LoggingIntegration"],
                 path: "Sources/AttributionServerIntegration",
                 linkerSettings: [
                     .linkedFramework("UIKit", .when(platforms: [.iOS])),
-                ]
+                ],
         ),
         .target(name: "SentryIntegration",
                 dependencies: [
@@ -111,10 +114,14 @@ let package = Package(
                 ]
                ),
         .target(name: "AttestationIntegration",
+                dependencies: ["LoggingIntegration"],
                 path: "Sources/AttestationIntegration",
                 linkerSettings: [
                   .linkedFramework("UIKit", .when(platforms: [.iOS])),
                 ]
         ),
+        .target(name: "LoggingIntegration",
+                path: "Sources/LoggingIntegration"
+               )
     ]
 )
