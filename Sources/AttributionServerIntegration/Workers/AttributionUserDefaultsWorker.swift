@@ -1,5 +1,6 @@
 import Foundation
 import UIKit
+import LoggingIntegration
 
 class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
     let userDefaults = UserDefaults.standard
@@ -11,6 +12,7 @@ class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
     fileprivate let generatedTokenKey = "ANALYTICS_GENERATED_TOKEN"
     fileprivate let installResult = "ANALYTICS_INSTALL_RESULT"
     fileprivate let uuidKey = "STORED_UUID_KEY"
+	fileprivate let appTransactionSentKey = "ANALYTICS_APP_TRANSACTION_SENT"
     fileprivate let fcmTokenKey = "ANALYTICS_FCM_TOKEN"
     
     var uuid: String {
@@ -40,7 +42,7 @@ class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
         let jsonDataOrNil = try? JSONEncoder().encode(data)
         
         guard let jsonData = jsonDataOrNil else {
-            print("\n\n\nANALYTICS IS NOT SAVED\n\n\n")
+            DebugLogger.log("\n\n\nANALYTICS IS NOT SAVED\n\n\n")
             return
         }
         
@@ -81,7 +83,7 @@ class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
         let jsonDataOrNil = try? JSONEncoder().encode(data)
         
         guard let jsonData = jsonDataOrNil else {
-            print("\n\n\nANALYTICS IS NOT SAVED\n\n\n")
+            DebugLogger.log("\n\n\nANALYTICS IS NOT SAVED\n\n\n")
             return
         }
         
@@ -119,6 +121,15 @@ class AttributionUserDefaultsWorker: AttributionUserDefaultsWorkerProtocol {
     
     func deleteSavedPurchaseData() {
         userDefaults.removeObject(forKey: purchaseDataKey)
+        userDefaults.synchronize()
+    }
+
+    func getAppTransactionSent() -> Bool {
+        return userDefaults.bool(forKey: appTransactionSentKey)
+    }
+
+    func saveAppTransactionSent(_ sent: Bool) {
+        userDefaults.set(sent, forKey: appTransactionSentKey)
         userDefaults.synchronize()
     }
     

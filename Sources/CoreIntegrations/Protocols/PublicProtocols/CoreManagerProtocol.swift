@@ -66,10 +66,16 @@ public protocol CoreManagerProtocol {
 
 public struct UserInfo: Codable {
     public var userSource: CoreUserSource
+    public var isIPAT: Bool?
     public var attrInfo: [String: String]?
     
-    public init(userSource: CoreUserSource, attrInfo: [String : String]? = nil) {
+    public init(userSource: CoreUserSource, isIPAT: Bool?, attrInfo: [String : String]? = nil) {
         self.userSource = userSource
+        self.isIPAT = isIPAT
         self.attrInfo = attrInfo
+    }
+    
+    public var confidentIPAT: Bool {
+        return isIPAT != false
     }
 }

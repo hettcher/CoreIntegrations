@@ -1,41 +1,42 @@
 
 import Foundation
 import StoreKit
+import LoggingIntegration
 
 extension PurchasesManager {
     public func requestProducts(_ identifiers: [String]) async -> SKProductsResult {
-        debugPrint("🏦 requestProducts ⚈ ⚈ ⚈ Requesting products... ⚈ ⚈ ⚈")
+        DebugLogger.log("🏦 requestProducts ⚈ ⚈ ⚈ Requesting products... ⚈ ⚈ ⚈")
         guard !identifiers.isEmpty else {
-            debugPrint("🏦 requestProducts ❌ Failed: identifiers are empty.")
+            DebugLogger.log("🏦 requestProducts ❌ Failed: identifiers are empty.")
             return .error(error: "empty identifiers")
         }
         
         do {
             let storeProducts = try await Product.products(for: identifiers)
-            debugPrint("🏦 requestProductsForPaywall ✅ Completed gathering Products.")
+            DebugLogger.log("🏦 requestProductsForPaywall ✅ Completed gathering Products.")
             
             guard !storeProducts.isEmpty else {
                 return .error(error: "products for identifiers not found")
             }
 
-            debugPrint("🏦 requestProductsForPaywall ✅ Completed updating available Products.")
+            DebugLogger.log("🏦 requestProductsForPaywall ✅ Completed updating available Products.")
             return .success(products: storeProducts)
         } catch {
-            debugPrint("🏦 requestProductsForPaywall ❌ Failed product request from the App Store server: \(error).")
+            DebugLogger.log("🏦 requestProductsForPaywall ❌ Failed product request from the App Store server: \(error).")
             return .error(error: error.localizedDescription)
         }
     }
     
     public func requestAllProducts(_ identifiers: [String]) async -> SKProductsResult {
-        debugPrint("🏦 requestAllProducts ⚈ ⚈ ⚈ Requesting products... ⚈ ⚈ ⚈")
+        DebugLogger.log("🏦 requestAllProducts ⚈ ⚈ ⚈ Requesting products... ⚈ ⚈ ⚈")
         guard !identifiers.isEmpty else {
-            debugPrint("🏦 requestAllProducts ❌ Failed: identifiers are empty.")
+            DebugLogger.log("🏦 requestAllProducts ❌ Failed: identifiers are empty.")
             return .error(error: "empty identifiers")
         }
         
         do {
             let storeProducts = try await Product.products(for: identifiers)
-            debugPrint("🏦 requestAllProducts ✅ Completed gathering Products.")
+            DebugLogger.log("🏦 requestAllProducts ✅ Completed gathering Products.")
             
             guard !storeProducts.isEmpty else {
                 return .error(error: "products for identifiers not found")
@@ -45,10 +46,10 @@ extension PurchasesManager {
             
             mapProducts(storeProducts)
 
-            debugPrint("🏦 requestAllProducts ✅ Completed updating available Products.")
+            DebugLogger.log("🏦 requestAllProducts ✅ Completed updating available Products.")
             return .success(products: storeProducts)
         } catch {
-            debugPrint("🏦 requestAllProducts ❌ Failed product request from the App Store server: \(error).")
+            DebugLogger.log("🏦 requestAllProducts ❌ Failed product request from the App Store server: \(error).")
             return .error(error: error.localizedDescription)
         }
     }
@@ -63,22 +64,22 @@ extension PurchasesManager {
             switch product.type {
             case .consumable:
                 newConsumables.append(product)
-                debugPrint("🏦 mapProducts ✅ Found consumable : \(product).")
+                DebugLogger.log("🏦 mapProducts ✅ Found consumable : \(product).")
             case .nonConsumable:
                 newNonConsumables.append(product)
-                debugPrint("🏦 mapProducts ✅ Found non-consumable : \(product).")
+                DebugLogger.log("🏦 mapProducts ✅ Found non-consumable : \(product).")
             case .autoRenewable:
                 newSubscriptions.append(product)
-                debugPrint("🏦 mapProducts ✅ Found auto-renewable subscription : \(product).")
+                DebugLogger.log("🏦 mapProducts ✅ Found auto-renewable subscription : \(product).")
             case .nonRenewable:
-                debugPrint("🏦 mapProducts ✅ Found non-renewable subscription : \(product).")
+                DebugLogger.log("🏦 mapProducts ✅ Found non-renewable subscription : \(product).")
                 newNonRenewables.append(product)
             default:
-                debugPrint("🏦 mapProducts ❌ unknown product : \(product).")
+                DebugLogger.log("🏦 mapProducts ❌ unknown product : \(product).")
             }
         }
 
-        debugPrint("🏦 mapProducts ✅ Completed ordering Products.")
+        DebugLogger.log("🏦 mapProducts ✅ Completed ordering Products.")
 
         consumables = sortByPrice(newConsumables)
         nonConsumables = sortByPrice(newNonConsumables)

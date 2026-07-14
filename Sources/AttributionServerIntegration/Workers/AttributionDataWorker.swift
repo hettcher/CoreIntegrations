@@ -4,6 +4,7 @@ import AdSupport
 import AdServices
 import StoreKit
 import AppTrackingTransparency
+import LoggingIntegration
 
 class AttributionDataWorker: AttributionDataWorkerProtocol {
     var idfa: String? {
@@ -22,7 +23,7 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
         let uuid = UIDevice.current.identifierForVendor?.uuidString ?? ""
         return uuid
     }
-    
+
     var sdkVersion: String {
         return "3.0.0rc"
     }
@@ -45,7 +46,7 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
 
     func attributionDetails() async -> AttributionDetails? {
         guard let attToken = try? AAAttribution.attributionToken() else {
-            print("Failed to retrieve AAAttribution.attributionToken()")
+            DebugLogger.log("Failed to retrieve AAAttribution.attributionToken()")
             return nil
         }
         
@@ -67,13 +68,13 @@ class AttributionDataWorker: AttributionDataWorkerProtocol {
 
             do {
                 let receiptData = try Data(contentsOf: appStoreReceiptURL, options: .alwaysMapped)
-                print(receiptData)
+                DebugLogger.log("Receipt data: \(receiptData.count) bytes")
 
                 let receiptString = receiptData.base64EncodedString(options: [])
                 return receiptString
             }
             catch {
-                print("Couldn't read receipt data with error: " + error.localizedDescription)
+                DebugLogger.log("Couldn't read receipt data with error: " + error.localizedDescription)
                 return ""
             }
         }

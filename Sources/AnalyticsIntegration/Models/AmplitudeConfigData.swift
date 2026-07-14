@@ -1,13 +1,17 @@
+import AmplitudeSwift
+
 public struct AmplitudeConfigData {
     let appKey: String
     let cnConfig: Bool
     let customURL: String?
+    let plugins: [Plugin]
     let sessionReplayConfig: SessionReplayConfig
     
-    public init(appKey: String, cnConfig: Bool, customURL: String?, sessionReplayConfig: SessionReplayConfig) {
+    public init(appKey: String, cnConfig: Bool, customURL: String?, plugins: [Plugin], sessionReplayConfig: SessionReplayConfig) {
         self.appKey = appKey
         self.cnConfig = cnConfig
         self.customURL = customURL
+        self.plugins = plugins
         self.sessionReplayConfig = sessionReplayConfig
     }
 }

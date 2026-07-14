@@ -1,18 +1,21 @@
 import Foundation
+import LoggingIntegration
 
 public class AttributionServerWorker {
     let installServerURLPath: String
     let purchaseServerURLPath: String
     let installPath: String
     let purchasePath: String
+	let appTransactionPath: String
     let tokensPath: String
     let externalAuthPath: String
 
-    init(installServerURLPath: String, purchaseServerURLPath: String, installPath: String, purchasePath: String, externalAuthPath: String, tokensPath: String) {
+    init(installServerURLPath: String, purchaseServerURLPath: String, installPath: String, purchasePath: String, appTransactionPath: String, externalAuthPath: String, tokensPath: String) {
         self.installServerURLPath = installServerURLPath
         self.purchaseServerURLPath = purchaseServerURLPath
         self.installPath = installPath
         self.purchasePath = purchasePath
+		self.appTransactionPath = appTransactionPath
         self.tokensPath = tokensPath
         self.externalAuthPath = externalAuthPath
     }
@@ -27,6 +30,12 @@ public class AttributionServerWorker {
     
     fileprivate var subscribeURL: URL? {
         let urlPath = "\(purchaseServerURLPath)\(purchasePath)"
+        let urlOrNil = URL(string: urlPath)
+        return urlOrNil
+    }
+
+    fileprivate var appTransactionURL: URL? {
+        let urlPath = "\(installServerURLPath)\(appTransactionPath)"
         let urlOrNil = URL(string: urlPath)
         return urlOrNil
     }
@@ -52,6 +61,14 @@ public class AttributionServerWorker {
         return session
     }
     
+    fileprivate var longerSession: URLSession {
+        let config = URLSessionConfiguration.default
+        config.waitsForConnectivity = false
+        config.timeoutIntervalForRequest = 60 // the same as default
+        let session = URLSession(configuration: config)
+        return session
+    }
+    
     fileprivate var waitingSession: URLSession {
         let config = URLSessionConfiguration.default
         config.waitsForConnectivity = true
@@ -72,7 +89,7 @@ public class AttributionServerWorker {
     }
     
     fileprivate func handleServerError() {
-        print("""
+        DebugLogger.log("""
             \n\n\n
             ==========================
             ANALYTICS SERVER DOWN
@@ -89,7 +106,7 @@ extension AttributionServerWorker: AttributionServerWorkerProtocol {
         let jsonDataOrNil = try? JSONEncoder().encode(parameters)
         
         guard let url = installURL, let jsonData = jsonDataOrNil else {
-            print("\n\n\nANALYTICS SEND ERROR\n\n\n")
+            DebugLogger.log("\n\n\nANALYTICS SEND ERROR\n\n\n")
             completion([:], NSError(domain: "coreintegration.attribution.internal", code: 400))
             return
         }
@@ -146,7 +163,7 @@ extension AttributionServerWorker: AttributionServerWorkerProtocol {
         let jsonDataOrNil = try? JSONEncoder().encode(analytics)
         
         guard let url = subscribeURL, let jsonData = jsonDataOrNil else {
-            print("\n\n\nANALYTICS SEND ERROR\n\n\n")
+            DebugLogger.log("\n\n\nANALYTICS SEND ERROR\n\n\n")
             completion(false)
             return
         }
@@ -189,7 +206,7 @@ extension AttributionServerWorker: AttributionServerWorkerProtocol {
         let jsonDataOrNil = try? JSONEncoder().encode(parameters)
         
         guard let url = externalAuthURL, let jsonData = jsonDataOrNil else {
-            print("\n\n\nEXTERNAL AUTH SEND ERROR\n\n\n")
+            DebugLogger.log("\n\n\nEXTERNAL AUTH SEND ERROR\n\n\n")
             completion(false)
             return
         }
@@ -219,7 +236,7 @@ extension AttributionServerWorker: AttributionServerWorkerProtocol {
         let jsonDataOrNil = try? JSONEncoder().encode(parameters)
         
         guard let url = tokensURL, let jsonData = jsonDataOrNil else {
-            print("\n\n\nFCM TOKEN SEND ERROR\n\n\n")
+            DebugLogger.log("\n\n\nFCM TOKEN SEND ERROR\n\n\n")
             completion(false)
             return
         }
@@ -251,6 +268,50 @@ extension AttributionServerWorker: AttributionServerWorkerProtocol {
                 return
             }
             
+            completion(true)
+        }
+        task.resume()
+    }
+
+    func sendAppTransaction(parameters: AttributionAppTransactionRequestModel,
+                            authToken: AttributionServerToken,
+                            isBackgroundSession: Bool = false,
+                            completion: @escaping ((Bool) -> Void)) {
+        let jsonDataOrNil = try? JSONEncoder().encode(parameters)
+
+        guard let url = appTransactionURL, let jsonData = jsonDataOrNil else {
+            DebugLogger.log("\n\n\nANALYTICS SEND ERROR\n\n\n")
+            completion(false)
+            return
+        }
+
+        let request = createRequest(url: url, body: jsonData, authToken: authToken)
+
+        let taskSession: URLSession
+        if isBackgroundSession {
+            taskSession = waitingSession
+        } else {
+            taskSession = longerSession
+        }
+
+        let task = taskSession.dataTask(with: request) { (data, response, error) in
+            if let error = error {
+                self.handleServerError()
+
+                if taskSession.configuration.waitsForConnectivity == false {
+                    self.sendAppTransaction(parameters: parameters, authToken: authToken,
+                                            isBackgroundSession: true, completion: completion)
+                }
+
+                completion(false)
+                return
+            }
+
+            guard data != nil else {
+                completion(false)
+                return
+            }
+
             completion(true)
         }
         task.resume()

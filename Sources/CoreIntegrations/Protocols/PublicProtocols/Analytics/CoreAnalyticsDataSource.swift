@@ -7,6 +7,7 @@ public protocol CoreAnalyticsDataSource {
     var allEvents: [AnalyticsEvents] { get }
     var allUserProperties: [AnalyticsUserProperties] { get }
     var customServerURL: String? { get }
+    var plugins: [Plugin] { get }
     
     var sessionReplayStartOnLaunch: Bool { get }
     var sessionReplaySampleRate: Float { get }
@@ -24,6 +25,10 @@ public extension CoreAnalyticsDataSource {
     
     var customServerURL: String? {
         return nil
+    }
+    
+    var plugins: [Plugin] {
+        return []
     }
     
     var sessionReplayStartOnLaunch: Bool {

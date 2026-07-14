@@ -54,6 +54,7 @@ public class FirebaseConfigurationStateMachine: NSObject {
             state = .configuredExternally
         case (.waitingForExternalConfiguration(let id), .handleExternalConfigurationFinished):
             if let savedId = id {
+                _userId = savedId
                 sendAnalyticsID(savedId)
                 state = .finishedConfigurationWithID(id: savedId)
             } else {
@@ -72,6 +73,7 @@ public class FirebaseConfigurationStateMachine: NSObject {
             state = .waitingForExternalConfiguration(id: id)
         case (.configuredInternally, .handleIDSetup(let id)),
              (.configuredExternally, .handleIDSetup(let id)):
+            _userId = id
             sendAnalyticsID(id)
             state  = .finishedConfigurationWithID(id: id)
         case (.finishedConfigurationWithID(let sentID), .handleIDSetup(let id)):
@@ -109,7 +111,7 @@ extension FirebaseConfigurationStateMachine: MessagingDelegate {
         NotificationCenter.default.post(
             name: NSNotification.Name("FCMTokenUpdated"),
             object: nil,
-            userInfo: ["token": token, "userId":_userId]
+            userInfo: ["token": token, "userId": _userId]
         )
     }
 }

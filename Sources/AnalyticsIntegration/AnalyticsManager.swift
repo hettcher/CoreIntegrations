@@ -2,7 +2,7 @@
 import UIKit
 import AmplitudeSwift
 import AmplitudeSwiftSessionReplayPlugin
-
+import LoggingIntegration
 
 public class AnalyticsManager {
     var printDebugAnalytics: Bool {
@@ -21,12 +21,13 @@ public class AnalyticsManager {
     public func configure(data: AmplitudeConfigData) {
         sessionReplayPlugin = AmplitudeSwiftSessionReplayPlugin(sampleRate: data.sessionReplayConfig.sampleRate, enableRemoteConfig: data.sessionReplayConfig.enableRemoteConfig)
         
+        amplitude = Amplitude(configuration: Configuration(apiKey: data.appKey, autocapture: .all))
+        amplitude?.configuration.minTimeBetweenSessionsMillis = 3000
+        data.plugins.forEach { amplitude?.add(plugin: $0) }
+        
         if data.sessionReplayConfig.startOnLaunch {
             startSessionReplayRecord()
         }
-        
-        amplitude = Amplitude(configuration: Configuration(apiKey: data.appKey, autocapture: .all))
-        amplitude?.configuration.minTimeBetweenSessionsMillis = 3000
         
         if let customURL = data.customURL, data.cnConfig == true {
             amplitude?.configuration.serverUrl = customURL
@@ -66,33 +67,6 @@ public class AnalyticsManager {
         amplitude?.reset()
     }
     
-    internal func sendCohort() {
-        let userDef = UserDefaults.standard
-        guard !userDef.bool(forKey: "isCohortSended") else {
-            print("COHORT SENDED")
-            return
-        }
-        print("COHORT NOT SENDED")
-        #if DEBUG
-        return
-        #endif
-        userDef.set(true, forKey: "isCohortSended")
-        
-        let date:Date = Date()
-        
-        let calendar = Calendar.current
-        let monthOfYear = calendar.component(.month, from: date) as Any
-        let dayOfYear = calendar.ordinality(of: .day, in: .year, for: date)! as Any
-        let weekOfYear = calendar.ordinality(of: .weekOfYear, in: .year, for: date)! as Any
-        
-        let identify = Identify()
-        identify.setOnce(property: "cohort_date", value: dayOfYear)
-        identify.setOnce(property: "cohort_week", value: weekOfYear)
-        identify.setOnce(property: "cohort_month", value: monthOfYear)
-        
-        amplitude?.identify(identify: identify)
-    }
-    
     func saveAttributionDetails(_ attributionDetails: [String : NSObject]?) {
         guard let details = attributionDetails else {
             return
@@ -117,9 +91,9 @@ public class AnalyticsManager {
         
         if printDebugAnalytics {
             if properties.isEmpty {
-                print("Amplitude logged \(event.uppercased())")
+                DebugLogger.log("Amplitude logged \(event.uppercased())")
             } else {
-                print("Amplitude logged \(event.uppercased()), properties \(properties)")
+                DebugLogger.log("Amplitude logged \(event.uppercased()), properties \(properties)")
             }
         }
         
@@ -131,7 +105,7 @@ public class AnalyticsManager {
         amplitude?.identify(identify: identify)
         
         if printDebugAnalytics {
-            print("Amplitude identified property: \(key.uppercased()), value: \(value)")
+            DebugLogger.log("Amplitude identified property: \(key.uppercased()), value: \(value)")
         }
     }
     
@@ -140,7 +114,7 @@ public class AnalyticsManager {
         amplitude?.identify(identify: identify)
         
         if printDebugAnalytics {
-            print("Analytics incremented property: \(key.uppercased()), value: \(value)")
+            DebugLogger.log("Analytics incremented property: \(key.uppercased()), value: \(value)")
         }
     }
     

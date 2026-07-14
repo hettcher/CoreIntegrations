@@ -10,6 +10,7 @@ import RemoteTestingIntegration
 import SentryIntegration
 import AttestationIntegration
 import FirebaseIntegration
+import LoggingIntegration
 #endif
 import AppTrackingTransparency
 import Foundation
@@ -87,8 +88,20 @@ public class CoreManager {
             if let _ = environmentVariables["xctest_remote_config_enabled"] {
                 analyticsManager = AnalyticsManager.shared
                 
-                let amplitudeCustomURL = configuration.amplitudeDataSource.customServerURL
-                analyticsManager?.configure(data: .init(appKey: configuration.appSettings.amplitudeSecret, cnConfig: AppEnvironment.isChina, customURL: amplitudeCustomURL, sessionReplayConfig: .init(startOnLaunch: configuration.amplitudeDataSource.sessionReplayStartOnLaunch, sampleRate: configuration.amplitudeDataSource.sessionReplaySampleRate, enableRemoteConfig: configuration.amplitudeDataSource.sessionReplayEnableRemoteConfig)))
+                let amplitudeDataSource = configuration.amplitudeDataSource
+                analyticsManager?.configure(
+                    data: .init(
+                        appKey: configuration.appSettings.amplitudeSecret,
+                        cnConfig: AppEnvironment.isChina,
+                        customURL: amplitudeDataSource.customServerURL,
+                        plugins: amplitudeDataSource.plugins,
+                        sessionReplayConfig: .init(
+                            startOnLaunch: amplitudeDataSource.sessionReplayStartOnLaunch,
+                            sampleRate: amplitudeDataSource.sessionReplaySampleRate,
+                            enableRemoteConfig: amplitudeDataSource.sessionReplayEnableRemoteConfig
+                        )
+                    )
+                )
                 
                 remoteConfigManager = CoreRemoteConfigManager(deploymentKey: configuration.appSettings.amplitudeDeploymentKey,
                                                               userInfo: [InternalUserProperty.app_environment.key: AppEnvironment.current.rawValue])
@@ -121,7 +134,8 @@ public class CoreManager {
                                                     tracesSampleRate: sentryDataSource.tracesSampleRate,
                                                     shouldCaptureHttpRequests: sentryDataSource.shouldCaptureHttpRequests,
                                                     httpCodesRange: sentryDataSource.httpCodesRange,
-                                                    handledDomains: sentryDataSource.handledDomains)
+                                                    handledDomains: sentryDataSource.handledDomains,
+                                                    swizzleClassNameExcludes: sentryDataSource.swizzleClassNameExcludes)
                 sentryManager.configure(sentryConfig)
             }
             
@@ -131,8 +145,20 @@ public class CoreManager {
                 firebaseManager.handle(event: FirebaseConfigurationStateMachine.Event.waitForExternalConfiguration)
             } 
             
-            let amplitudeCustomURL = configuration.amplitudeDataSource.customServerURL
-            analyticsManager?.configure(data: .init(appKey: configuration.appSettings.amplitudeSecret, cnConfig: AppEnvironment.isChina, customURL: amplitudeCustomURL, sessionReplayConfig: .init(startOnLaunch: configuration.amplitudeDataSource.sessionReplayStartOnLaunch, sampleRate: configuration.amplitudeDataSource.sessionReplaySampleRate, enableRemoteConfig: configuration.amplitudeDataSource.sessionReplayEnableRemoteConfig)))
+            let amplitudeDataSource = configuration.amplitudeDataSource
+            analyticsManager?.configure(
+                data: .init(
+                    appKey: configuration.appSettings.amplitudeSecret,
+                    cnConfig: AppEnvironment.isChina,
+                    customURL: amplitudeDataSource.customServerURL,
+                    plugins: amplitudeDataSource.plugins,
+                    sessionReplayConfig: .init(
+                        startOnLaunch: amplitudeDataSource.sessionReplayStartOnLaunch,
+                        sampleRate: amplitudeDataSource.sessionReplaySampleRate,
+                        enableRemoteConfig: amplitudeDataSource.sessionReplayEnableRemoteConfig
+                    )
+                )
+            )
             
             sendStoreCountryUserProperty()
             configuration.appSettings.launchCount += 1
@@ -164,10 +190,12 @@ public class CoreManager {
             purchaseManager?.initialize(allIdentifiers: configuration.paywallDataSource.allPurchaseIDs, proIdentifiers: configuration.paywallDataSource.allProPurchaseIDs)
             
             remoteConfigManager = CoreRemoteConfigManager(deploymentKey: configuration.appSettings.amplitudeDeploymentKey,
-                                                          userInfo: [InternalUserProperty.app_environment.key: AppEnvironment.current.rawValue])
+                                                          userInfo: [InternalUserProperty.app_environment.key: AppEnvironment.current.rawValue],
+                                                          customServerURL: configuration.customAmplitudeServer)
             
             let installPath = "/install-application"
             let purchasePath = "/subscribe"
+			let appTransactionPath = "/app-transaction"
             let tokensPath = "/tokens"
             let externalAuthPath = "/external-authorization"
             let installURLPath = configuration.attributionServerDataSource.installPath
@@ -179,8 +207,9 @@ public class CoreManager {
                                                                  purchaseServerURLPath: purchaseURLPath,
                                                                  externalAuthServerURLPath: externalAuthURLPath,
                                                                  installPath: installPath,
-                                                                 purchasePath: purchasePath,
+                                                                 appTransactionPath: appTransactionPath,
                                                                  externalAuthPath: externalAuthPath,
+                                                                 purchasePath: purchasePath,
                                                                  appsflyerID: appsflyerToken,
                                                                  appEnvironment: AppEnvironment.current.rawValue,
                                                                  facebookData: facebookData,
@@ -194,7 +223,7 @@ public class CoreManager {
             return
         }
         isConfigured = true
-        
+        DebugLogger.isEnabled = configuration.isDebugLoggingEnabled
         self.configuration = configuration
         
         let environmentVariables = ProcessInfo.processInfo.environment
@@ -223,7 +252,6 @@ public class CoreManager {
                                                object: nil)
         
         signForConfigurationFinish()
-        
         signForAttributionInstall()
         signForAttributionFinish()
     }
@@ -422,7 +450,7 @@ extension CoreManager {
         let purchasePath = "/subscribe"
         let tokensPath = "/tokens"
         let externalAuthPath = "/external-authorization"
-
+		let appTransactionPath = "/app-transaction"
         let installURLPath = (InternalRemoteConfig.install_server_path.internalPayload?.first?.value as? String) ?? ""
         let purchaseURLPath = (InternalRemoteConfig.purchase_server_path.internalPayload?.first?.value as? String) ?? ""
         let externalAuthURLPath = InternalRemoteConfig.external_auth_server_path.internalValue
@@ -431,6 +459,7 @@ extension CoreManager {
             let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                  purchaseServerURLPath: purchaseURLPath,
                                                                  externalAuthServerURLPath: externalAuthURLPath,
+                                                                 appTransactionPath: appTransactionPath,
                                                                  installPath: installPath,
                                                                  purchasePath: purchasePath,
                                                                  externalAuthPath: externalAuthPath,
@@ -441,7 +470,7 @@ extension CoreManager {
             if let serverDataSource = configuration?.attributionServerDataSource {
                 let installURLPath = serverDataSource.installPath
                 let purchaseURLPath = serverDataSource.purchasePath
-                
+
                 let attributionConfiguration = AttributionConfigURLs(installServerURLPath: installURLPath,
                                                                      purchaseServerURLPath: purchaseURLPath,
                                                                      externalAuthServerURLPath: externalAuthURLPath,
@@ -494,19 +523,34 @@ extension CoreManager {
         let result = getAttributionResult()
         
         var attributionDict: [String: String] = ["network": result.network.rawValue]
+        if let ipat = result.isIPAT {
+            attributionDict["ipat"] = "\(ipat)"
+        }
         if result.userAttribution.isEmpty == false {
             attributionDict += result.userAttribution
         }
         
         let currentUserInfo = userInfo
         
-        if currentUserInfo == nil || currentUserInfo?.userSource != result.network {
-            userInfo = UserInfo(userSource: result.network, attrInfo: result.userAttribution)
+        if currentUserInfo == nil || currentUserInfo?.userSource != result.network || currentUserInfo?.isIPAT != result.isIPAT {
+            userInfo = UserInfo(userSource: result.network, isIPAT: result.isIPAT, attrInfo: result.userAttribution)
             if result.network == .organic {
-                sendUserAttribution(userAttribution: [:], status: configurationManager.statusForAnalytics)
-                
-                remoteConfigManager?.updateRemoteConfig([:]) { [weak self] in
-                    InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
+                if let ipat = result.isIPAT, currentUserInfo?.isIPAT != result.isIPAT {
+                    if isUpdated {
+                        sendUserAttributionUpdate(userAttribution: ["ipat": "\(ipat)"])
+                    } else {
+                        sendUserAttribution(userAttribution: ["ipat": "\(ipat)"], status: configurationManager.statusForAnalytics)
+                    }
+                    
+                    remoteConfigManager?.updateRemoteConfig(["ipat": "\(ipat)"]) { [weak self] in
+                        InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
+                    }
+                } else {
+                    sendUserAttribution(userAttribution: [:], status: configurationManager.statusForAnalytics)
+                    
+                    remoteConfigManager?.updateRemoteConfig([:]) { [weak self] in
+                        InternalConfigurationEvent.remoteConfigUpdated.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
+                    }
                 }
             } else {
                 if isUpdated {
@@ -527,11 +571,11 @@ extension CoreManager {
         }
     }
     
-    func getAttributionResult() -> (network: CoreUserSource, userAttribution: [String: String]) {
+    func getAttributionResult() -> (network: CoreUserSource, isIPAT: Bool?, userAttribution: [String: String]) {
         let deepLinkResult = self.appsflyerManager?.deeplinkResult ?? [:]
         let asaResult = AttributionServerManager.shared.installResultData
         
-        let isIPAT = asaResult?.isIPAT ?? false
+        let isIPAT = asaResult?.isIPAT
         let isASA = (asaResult?.asaAttribution["campaignName"] as? String != nil) ||
         (asaResult?.asaAttribution["campaign_name"] as? String != nil)
         
@@ -547,14 +591,12 @@ extension CoreManager {
                 networkSource = .other(networkValue)
             }
             userAttribution = deepLinkResult
-        } else if isIPAT {
-            networkSource = .ipat
         } else if isASA {
             networkSource = .asa
             userAttribution = asaResult?.asaAttribution ?? [:]
         }
         
-        return (networkSource, userAttribution)
+        return (networkSource, isIPAT, userAttribution)
     }
 }
 
@@ -675,7 +717,7 @@ extension CoreManager {
         }
         
         AttributionServerManager.shared.checkAndSendSavedFCMToken(fcmToken: fcmToken, userId: userId, localization: localization) { result in
-            print("FCM token sent successfully - \(result)")
+            DebugLogger.log("FCM token sent successfully - \(result)")
         }
         
         self.delegate?.coreConfiguration(fcmTokenUpdated: fcmToken)

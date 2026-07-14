@@ -9,15 +9,16 @@ public struct AttributionConfigData {
     let installPath: String
     let purchasePath: String
     let externalAuthPath: String
+    let appTransactionPath: String
     let appsflyerID: String?
     let appEnvironment: String?
     let facebookData: AttributionFacebookModel?
     let tokensPath: String
     let hasExternalAuth: Bool?
 
-    public init(authToken: AttributionServerToken, installServerURLPath: String, purchaseServerURLPath: String,
-                externalAuthServerURLPath: String, installPath: String,
-                purchasePath: String, externalAuthPath: String, appsflyerID: String?, appEnvironment: String?,
+    public init(authToken: AttributionServerToken, installServerURLPath: String, purchaseServerURLPath: String, 
+                externalAuthServerURLPath: String, installPath: String, appTransactionPath: String = "/app-transaction",
+                externalAuthPath: String, purchasePath: String, appsflyerID: String?, appEnvironment: String?,
                 facebookData: AttributionFacebookModel?, tokensPath: String, hasExternalAuth: Bool?) {
         self.authToken = authToken
         self.appsflyerID = appsflyerID
@@ -27,6 +28,7 @@ public struct AttributionConfigData {
         self.externalAuthServerURLPath = externalAuthServerURLPath
         self.installPath = installPath
         self.purchasePath = purchasePath
+        self.appTransactionPath = appTransactionPath
         self.externalAuthPath = externalAuthPath
         self.appEnvironment = appEnvironment
         self.tokensPath = tokensPath
@@ -40,15 +42,18 @@ public struct AttributionConfigURLs {
     let externalAuthServerURLPath: String
     let installPath: String
     let purchasePath: String
+    let appTransactionPath: String
     let externalAuthPath: String
     let tokensPath: String
     
     public init(installServerURLPath: String, purchaseServerURLPath: String, externalAuthServerURLPath: String,
-                installPath: String, purchasePath: String, externalAuthPath: String, tokensPath: String) {
+                appTransactionPath: String = "/app-transaction", installPath: String, 
+				purchasePath: String, externalAuthPath: String, tokensPath: String) {
         self.installServerURLPath = installServerURLPath
         self.purchaseServerURLPath = purchaseServerURLPath
         self.installPath = installPath
         self.purchasePath = purchasePath
+        self.appTransactionPath = appTransactionPath
         self.tokensPath = tokensPath
         self.externalAuthServerURLPath = externalAuthServerURLPath
         self.externalAuthPath = externalAuthPath

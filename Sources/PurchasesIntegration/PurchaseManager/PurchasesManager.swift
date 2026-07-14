@@ -1,5 +1,6 @@
 import StoreKit
 import Foundation
+import LoggingIntegration
 
 public typealias Transaction = StoreKit.Transaction
 public typealias RenewalInfo = StoreKit.Product.SubscriptionInfo.RenewalInfo
@@ -35,8 +36,8 @@ public class PurchasesManager: NSObject, PurchasesManagerProtocol {
     
     // MARK: Lifecycle
     public func initialize(allIdentifiers: [String], proIdentifiers: [String]) {
-        debugPrint("🏦 initialize ⚈ ⚈ ⚈ Initializing... ⚈ ⚈ ⚈")
-        debugPrint("🏦 initialize ⚈ ⚈ ⚈ Starting Transaction Listener... ⚈ ⚈ ⚈")
+        DebugLogger.log("🏦 initialize ⚈ ⚈ ⚈ Initializing... ⚈ ⚈ ⚈")
+        DebugLogger.log("🏦 initialize ⚈ ⚈ ⚈ Starting Transaction Listener... ⚈ ⚈ ⚈")
         self.allIdentifiers = allIdentifiers
         self.proIdentifiers = proIdentifiers
         
@@ -44,21 +45,21 @@ public class PurchasesManager: NSObject, PurchasesManagerProtocol {
 
         Task { [weak self] in
             guard let self = self else { return }
-            debugPrint("🏦 initialize ⚈ ⚈ ⚈ Requesting products... ⚈ ⚈ ⚈")
+            DebugLogger.log("🏦 initialize ⚈ ⚈ ⚈ Requesting products... ⚈ ⚈ ⚈")
             
             let _ = await self.requestAllProducts(allIdentifiers)
 
-            debugPrint("🏦 initialize ⚈ ⚈ ⚈ Updating customer product status... ⚈ ⚈ ⚈")
+            DebugLogger.log("🏦 initialize ⚈ ⚈ ⚈ Updating customer product status... ⚈ ⚈ ⚈")
             
             await self.updateProductStatus()
         }
-        debugPrint("🏦 initialize ✅ initialized")
+        DebugLogger.log("🏦 initialize ✅ initialized")
     }
 
     deinit {
-        debugPrint("🏦 deinit ⚈ ⚈ ⚈ Deinitializing... ⚈ ⚈ ⚈")
+        DebugLogger.log("🏦 deinit ⚈ ⚈ ⚈ Deinitializing... ⚈ ⚈ ⚈")
         updateListenerTask?.cancel()
-        debugPrint("🏦 deinit ✅ Deinitialized")
+        DebugLogger.log("🏦 deinit ✅ Deinitialized")
     }
     
     public func setUserID(_ id: String) {
