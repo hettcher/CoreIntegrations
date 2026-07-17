@@ -16,7 +16,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/firebase/firebase-ios-sdk.git", from: "12.0.0"),
-        .package(url: "https://github.com/facebook/facebook-ios-sdk", from: "17.3.0"),
+        .package(url: "https://github.com/facebook/facebook-ios-sdk", from: "18.1.0"),
         .package(url: "https://github.com/AppsFlyerSDK/AppsFlyerFramework-Dynamic", from: "6.0.0"),
         .package(url: "https://github.com/amplitude/experiment-ios-client", from: "1.13.5"),
         .package(url: "https://github.com/getsentry/sentry-cocoa.git", from: "9.0.0"),
