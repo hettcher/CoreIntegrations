@@ -17,6 +17,7 @@ extension CoreManager: CoreManagerProtocol {
         self.analyticsManager?.stopSessionReplayRecord()
     }
     
+    @MainActor
     public func listenForPendingPurchases(_ result: @escaping (PurchasesIntegration.Transaction?, (any Error)?) -> Void) {
         guard let purchaseManager = purchaseManager else {return}
         purchaseManager.listenForPendingPurchases(result)
@@ -163,6 +164,7 @@ extension CoreManager: CoreManagerProtocol {
         }
     }
     
+    @MainActor
     public func application(_ application: UIApplication,
                             didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]?,
                             coreCofiguration configuration: CoreConfigurationProtocol,
