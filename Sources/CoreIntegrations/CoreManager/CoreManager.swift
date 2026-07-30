@@ -76,7 +76,6 @@ public class CoreManager {
     
     var networkMonitor = NetworkManager()
     
-    @MainActor
     func configureAll(configuration: CoreConfigurationProtocol) {
         func verifyTestEnvironment(envVariables: [String: String]) -> Bool {
             return envVariables["xctest_skip_config"] != nil
@@ -289,7 +288,6 @@ public class CoreManager {
         AttributionServerManager.shared.sendExternalAuthorization(externalAuthID: authID)
     }
     
-    @MainActor
     @objc public func applicationDidBecomeActive() {
         configureID()
         
@@ -313,7 +311,6 @@ public class CoreManager {
         }
     }
     
-    @MainActor
     private func configureID() {
         let savedIDFV = AttributionServerManager.shared.installResultData?.idfv
         let uuid = AttributionServerManager.shared.savedUserUUID

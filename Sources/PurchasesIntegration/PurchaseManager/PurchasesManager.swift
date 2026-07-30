@@ -6,7 +6,6 @@ public typealias Transaction = StoreKit.Transaction
 public typealias RenewalInfo = StoreKit.Product.SubscriptionInfo.RenewalInfo
 public typealias RenewalState = StoreKit.Product.SubscriptionInfo.RenewalState
 
-@MainActor
 public class PurchasesManager: NSObject, PurchasesManagerProtocol {
     // MARK: Variables
     static let identifier: String = "🏦"
