@@ -2,7 +2,6 @@
 import Foundation
 import StoreKit
 
-@MainActor
 public protocol PurchasesManagerProtocol {
     static var shared: PurchasesManagerProtocol { get }
     func initialize(allIdentifiers: [String], proIdentifiers: [String])

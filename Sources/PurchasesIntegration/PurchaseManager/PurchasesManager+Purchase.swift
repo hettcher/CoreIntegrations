@@ -5,6 +5,7 @@ import UIKit
 import LoggingIntegration
 
 extension PurchasesManager {
+    @MainActor
     public func purchase(_ product: Product, activeController: UIViewController?) async throws -> SKPurchaseResult {
         DebugLogger.log("🏦 purchase ⚈ ⚈ ⚈ Purchasing product \(product.displayName)... ⚈ ⚈ ⚈")
 
@@ -16,6 +17,7 @@ extension PurchasesManager {
         return try await performPurchase(product, options: options, activeController: activeController)
     }
     
+    @MainActor
     public func purchase(_ product: Product, promoOffer:SKPromoOffer, activeController: UIViewController?) async throws -> SKPurchaseResult {
         let promoOption = Product.PurchaseOption.promotionalOffer(
             offerID: promoOffer.offerID,

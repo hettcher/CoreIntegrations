@@ -21,7 +21,6 @@ public protocol CoreManagerProtocol {
     var fcmToken: String? { get }
     var userInfo: UserInfo? { get }
 
-    @MainActor
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?,
                      coreCofiguration configuration: CoreConfigurationProtocol,
@@ -43,7 +42,6 @@ public protocol CoreManagerProtocol {
     
     func setExternalAuthId(_ externalAuthId: String?)
     
-    @MainActor
     func listenForPendingPurchases(_ result: @escaping (PurchasesIntegration.Transaction?, Error?) -> Void)
 
     func purchase(_ purchase: Purchase, activeController: UIViewController?) async throws -> PurchasesPurchaseResult
