@@ -15,15 +15,15 @@ extension PurchasesManager {
             for await result in Transaction.updates {
                 do {
                     DebugLogger.log("🏦 listenForTransactions ⚈ ⚈ ⚈ Checking verification for transaction \(result.debugDescription) ⚈ ⚈ ⚈")
-                    let transaction = try self.checkVerified(result)
+                    let transaction = try await self.checkVerified(result)
                     DebugLogger.log("🏦 listenForTransactions ✅ Transaction Verified.")
                     await self.updateProductStatus()
                     DebugLogger.log("🏦 listenForTransactions ✅ Updated Customer Product Status.")
                     await transaction.finish()
-                    self.purchasePendingCallback?(transaction, nil)
+                    await self.purchasePendingCallback?(transaction, nil)
                     DebugLogger.log("🏦 listenForTransactions ✅ Finished Transaction.")
                 } catch {
-                    self.purchasePendingCallback?(nil, error)
+                    await self.purchasePendingCallback?(nil, error)
                     DebugLogger.log("🏦 listenForTransactions ❌ Transaction verification failed.")
                 }
             }
