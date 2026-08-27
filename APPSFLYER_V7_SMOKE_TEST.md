@@ -54,7 +54,7 @@
 
 | Гейт | Бекстоп | Сигнал, якщо завис |
 |---|---|---|
-| ATT | callback + наявний fallback 5 с | якщо `[START]` немає і через 5 с — гейт не ATT |
+| ATT | polling кожні 0.5 с + fallback 5 с | якщо `[START]` немає і через 5 с — гейт не ATT |
 | session ready (SDK) | внутрішній таймаут SDK | `[SRD] WARNING: deeplink timed out` показує, що SDK свій таймаут відпрацював |
 | customer user ID | **бекстопу немає** | Sentry: `coreintegrations.appsflyer.noCustomerUserID` |
 
@@ -93,9 +93,9 @@ Sentry-подія `coreintegrations.appsflyer.noCustomerUserID` є **єдини�
 
 **Ключовий негативний тест (обов'язковий!):** запустити апку і **не торкатися ATT-промпту**
 взагалі. Через **~5 с** `[START]` мусить з'явитися все одно — це hard fallback у
-`CoreManager.requestATT()`. Під час fallback CoreManager повторно читає
-`ATTrackingManager.trackingAuthorizationStatus`, тому вже відому відповідь підхоплює на
-п'ятій секунді, навіть якщо системний callback Apple не прийшов.
+`CoreManager.requestATT()`. До fallback CoreManager кожні 0.5 с перевіряє
+`ATTrackingManager.trackingAuthorizationStatus`, тому вже відому відповідь підхоплює навіть
+якщо системний callback Apple не прийшов.
 Якщо не з'явився — сесія блокується назавжди, це блокер релізу.
 
 **Тест межі fallback:** відповісти **Allow** на 2–4 секунді. Перша `launches`-сесія мусить

@@ -191,9 +191,7 @@ extension CoreManager: CoreManagerProtocol {
     }
     
     public func handleATTPermission(_ status: ATTrackingManager.AuthorizationStatus) {
-        self.sendAttEvent(answer: status == .authorized)
-        self.handleATTAnswered(status)
-        InternalConfigurationEvent.attConcentGiven.markAsCompleted()
+        attResolutionCoordinator.resolveExternally(status)
     }
     
     public func handleCustomFirebaseConfigured() {
