@@ -13,6 +13,13 @@ public protocol AppfslyerManagerProtocol {
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data)
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any], fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void)
     
+    /// Signals that the customer user ID is set, i.e. the session may be sent.
     func startAppsflyer()
+    /// Signals that the ATT decision is known, i.e. the session may be sent.
+    func handleATTResolved()
     func logTrialPurchase()
+}
+
+public extension AppfslyerManagerProtocol {
+    func handleATTResolved() {}
 }

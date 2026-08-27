@@ -169,7 +169,7 @@ extension CoreManager: CoreManagerProtocol {
                             coreDelegate delegate: CoreManagerDelegate) {
         self.delegate = delegate
         networkMonitor.startMonitoring()
-        self.configureAll(configuration: configuration)
+        self.configureAll(configuration: configuration, launchOptions: launchOptions)
     }
     
     public func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {

@@ -28,7 +28,7 @@ Pod::Spec.new do |s|
   s.dependency 'FirebaseAnalytics'
   s.dependency 'FirebaseCore'
   s.dependency 'FBSDKCoreKit'
-  s.dependency 'AppsFlyerFramework'
+  s.dependency 'AppsFlyerFramework', '= 7.0.1'
   s.dependency 'Amplitude'
   s.dependency 'AnalyticsConnector'
   s.dependency 'AmplitudeExperiment'

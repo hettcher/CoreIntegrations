@@ -54,6 +54,7 @@ public class CoreManager {
     }
     
     var attAnswered: Bool = false
+    var appsflyerConfigurationOutcomePolicy = AppsFlyerConfigurationOutcomePolicy()
     var isConfigured: Bool = false
     
     var configuration: CoreConfigurationProtocol?
@@ -76,7 +77,8 @@ public class CoreManager {
     
     var networkMonitor = NetworkManager()
     
-    func configureAll(configuration: CoreConfigurationProtocol) {
+    func configureAll(configuration: CoreConfigurationProtocol,
+                      launchOptions: [UIApplication.LaunchOptionsKey : Any]?) {
         func verifyTestEnvironment(envVariables: [String: String]) -> Bool {
             return envVariables["xctest_skip_config"] != nil
         }
@@ -172,7 +174,8 @@ public class CoreManager {
                                                                      isFirstStart: configuration.appSettings.isFirstLaunch,
                                                                      timeout: configuration.configurationTimeout)
             
-            appsflyerManager = AppfslyerManager(config: configuration.appsflyerConfig)
+            appsflyerManager = AppfslyerManager(config: configuration.appsflyerConfig,
+                                                launchOptions: launchOptions)
             appsflyerManager?.delegate = self
             
             if configuration.isFacebookEnabled {
@@ -257,7 +260,7 @@ public class CoreManager {
     }
     
     func reconfigure() {
-        AppConfigurationManager.shared?.reset()
+        resetConfigurationGeneration()
         attAnswered = false
         signForAttributionInstall()
         signForAttributionFinish()
@@ -268,6 +271,11 @@ public class CoreManager {
                 InternalConfigurationEvent.remoteConfigLoaded.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
             }
         }
+    }
+
+    private func resetConfigurationGeneration() {
+        AppConfigurationManager.shared?.reset()
+        appsflyerConfigurationOutcomePolicy.reset()
     }
     
     func internalHanleAuthID(_ authID: String?) {
@@ -418,6 +426,7 @@ public class CoreManager {
             AppConfigurationManager.shared?.startTimoutTimer()
             InternalConfigurationEvent.attConcentGiven.markAsCompleted(error: error)
             facebookManager?.configureATT(isAuthorized: status == .authorized)
+            appsflyerManager?.handleATTResolved()
         }
     }
     
@@ -428,6 +437,7 @@ public class CoreManager {
         AppConfigurationManager.shared?.startTimoutTimer()
         InternalConfigurationEvent.attConcentGiven.markAsCompleted(error: error)
         facebookManager?.configureATT(isAuthorized: status == .authorized)
+        appsflyerManager?.handleATTResolved()
         appsflyerManager?.startAppsflyer()
     }
 }
@@ -506,6 +516,12 @@ extension CoreManager {
     }
     
     func handleAttributionFinish(isUpdated: Bool) {
+        MainQueueExecutor.perform { [weak self] in
+            self?.handleAttributionFinishOnMain(isUpdated: isUpdated)
+        }
+    }
+
+    private func handleAttributionFinishOnMain(isUpdated: Bool) {
         guard let configurationManager = AppConfigurationManager.shared else {
             assertionFailure()
             return
@@ -515,7 +531,7 @@ extension CoreManager {
         
         if isInternetError && checkIsNoInternetHandledOrIgnored() == false && isUpdated == false {
             shouldReconfigure = true
-            AppConfigurationManager.shared?.reset()
+            resetConfigurationGeneration()
             delegate?.coreConfigurationFinished(result: .noInternet)
             return
         }
