@@ -171,7 +171,7 @@ extension CoreManager: CoreManagerProtocol {
                             coreDelegate delegate: CoreManagerDelegate) {
         self.delegate = delegate
         networkMonitor.startMonitoring()
-        self.configureAll(configuration: configuration)
+        self.configureAll(configuration: configuration, launchOptions: launchOptions)
     }
     
     public func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any]) -> Bool {
@@ -193,9 +193,7 @@ extension CoreManager: CoreManagerProtocol {
     }
     
     public func handleATTPermission(_ status: ATTrackingManager.AuthorizationStatus) {
-        self.sendAttEvent(answer: status == .authorized)
-        self.handleATTAnswered(status)
-        InternalConfigurationEvent.attConcentGiven.markAsCompleted()
+        attResolutionCoordinator.resolveExternally(status)
     }
     
     public func handleCustomFirebaseConfigured() {

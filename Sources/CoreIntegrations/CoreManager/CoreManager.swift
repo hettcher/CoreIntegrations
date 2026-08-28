@@ -12,7 +12,6 @@ import AttestationIntegration
 import FirebaseIntegration
 import LoggingIntegration
 #endif
-import AppTrackingTransparency
 import Foundation
 import StoreKit
 
@@ -53,7 +52,8 @@ public class CoreManager {
         }
     }
     
-    var attAnswered: Bool = false
+    lazy var attResolutionCoordinator = makeATTResolutionCoordinator()
+    var appsflyerConfigurationOutcomePolicy = AppsFlyerConfigurationOutcomePolicy()
     var isConfigured: Bool = false
     
     var configuration: CoreConfigurationProtocol?
@@ -77,7 +77,8 @@ public class CoreManager {
     var networkMonitor = NetworkManager()
     
     @MainActor
-    func configureAll(configuration: CoreConfigurationProtocol) {
+    func configureAll(configuration: CoreConfigurationProtocol,
+                      launchOptions: [UIApplication.LaunchOptionsKey : Any]?) {
         func verifyTestEnvironment(envVariables: [String: String]) -> Bool {
             return envVariables["xctest_skip_config"] != nil
         }
@@ -173,7 +174,8 @@ public class CoreManager {
                                                                      isFirstStart: configuration.appSettings.isFirstLaunch,
                                                                      timeout: configuration.configurationTimeout)
             
-            appsflyerManager = AppfslyerManager(config: configuration.appsflyerConfig)
+            appsflyerManager = AppfslyerManager(config: configuration.appsflyerConfig,
+                                                launchOptions: launchOptions)
             appsflyerManager?.delegate = self
             
             if configuration.isFacebookEnabled {
@@ -258,8 +260,7 @@ public class CoreManager {
     }
     
     func reconfigure() {
-        AppConfigurationManager.shared?.reset()
-        attAnswered = false
+        resetConfigurationGeneration()
         signForAttributionInstall()
         signForAttributionFinish()
         signForConfigurationFinish()
@@ -269,6 +270,11 @@ public class CoreManager {
                 InternalConfigurationEvent.remoteConfigLoaded.markAsCompleted(error: self?.remoteConfigManager?.remoteError)
             }
         }
+    }
+
+    private func resetConfigurationGeneration() {
+        AppConfigurationManager.shared?.reset()
+        appsflyerConfigurationOutcomePolicy.reset()
     }
     
     func internalHanleAuthID(_ authID: String?) {
@@ -352,87 +358,6 @@ public class CoreManager {
         firebaseManager.handle(event: FirebaseConfigurationStateMachine.Event.handleExternalConfigurationFinished)
     }
     
-    func requestATT() {
-        let attStatus = ATTrackingManager.trackingAuthorizationStatus
-        guard attStatus == .notDetermined else {
-            self.sendATTProperty(answer: attStatus == .authorized)
-            
-            guard attAnswered == false else { return }
-            attAnswered = true
-            
-            handleATTAnswered(attStatus)
-            return
-        }
-        
-        /*
-         This stupid thing is made to be sure, that we'll handle ATT anyways, 100%
-         And it looks like that apple has a bug, at least in sandbox, when ATT == .notDetermined
-         but ATT alert for some reason not showing up, so it keeps unhandled and configuration never ends also
-         The only problem this solution brings - if user really don't unswer ATT for more than 5 seconds -
-         then we would think he didn't answer and the result would be false, even if he would answer true
-         in more than 3 seconds
-         */
-        DispatchQueue.global().asyncAfter(deadline: .now() + 5) { [weak self] in
-            guard self?.attAnswered == false else { return }
-            self?.attAnswered = true
-            
-            self?.sendAttEvent(answer: false)
-            let status = ATTrackingManager.trackingAuthorizationStatus
-            self?.handleATTAnswered(status, error: NSError(domain: "coreintegrations.att.timeout", code: 6456))
-        }
-        
-        ATTrackingManager.requestTrackingAuthorization { [weak self] status in
-            guard self?.attAnswered == false else { return }
-            self?.attAnswered = true
-            
-            self?.sendAttEvent(answer: status == .authorized)
-            self?.handleATTAnswered(status)
-        }
-    }
-    
-    func handleATTAnswered(_ status: ATTrackingManager.AuthorizationStatus, error: Error? = nil) {
-        if AppEnvironment.isChina {
-            sendConfigurationDelayed(status: [:])
-            
-            var isReconfigured = false
-            networkMonitor.monitorInternetChanges { [weak self] isEnabled in
-                guard isEnabled else {
-                    return
-                }
-                
-                guard isReconfigured == false else {
-                    return
-                }
-                isReconfigured = true
-                
-                self?.reconfigureAfterATT(status, error: error)
-            }
-            
-            DispatchQueue.global().asyncAfter(deadline: .now() + 6) { [weak self] in
-                guard isReconfigured == false else {
-                    return
-                }
-                isReconfigured = true
-                
-                self?.reconfigureAfterATT(status, error: error)
-            }
-        } else {
-            sendConfigurationStarted(status: [:])
-            AppConfigurationManager.shared?.startTimoutTimer()
-            InternalConfigurationEvent.attConcentGiven.markAsCompleted(error: error)
-            facebookManager?.configureATT(isAuthorized: status == .authorized)
-        }
-    }
-    
-    func reconfigureAfterATT(_ status: ATTrackingManager.AuthorizationStatus, error: Error? = nil) {
-        sendConfigurationStarted(status: [:])
-        reconfigure()
-        attAnswered = true
-        AppConfigurationManager.shared?.startTimoutTimer()
-        InternalConfigurationEvent.attConcentGiven.markAsCompleted(error: error)
-        facebookManager?.configureATT(isAuthorized: status == .authorized)
-        appsflyerManager?.startAppsflyer()
-    }
 }
 
 // MARK: Attribution Start
@@ -509,6 +434,12 @@ extension CoreManager {
     }
     
     func handleAttributionFinish(isUpdated: Bool) {
+        MainQueueExecutor.perform { [weak self] in
+            self?.handleAttributionFinishOnMain(isUpdated: isUpdated)
+        }
+    }
+
+    private func handleAttributionFinishOnMain(isUpdated: Bool) {
         guard let configurationManager = AppConfigurationManager.shared else {
             assertionFailure()
             return
@@ -518,7 +449,7 @@ extension CoreManager {
         
         if isInternetError && checkIsNoInternetHandledOrIgnored() == false && isUpdated == false {
             shouldReconfigure = true
-            AppConfigurationManager.shared?.reset()
+            resetConfigurationGeneration()
             delegate?.coreConfigurationFinished(result: .noInternet)
             return
         }
